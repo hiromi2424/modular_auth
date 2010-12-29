@@ -50,7 +50,7 @@ class ModularAuthUtility {
 		}
 
 		if (!App::import($type, $name) && !class_exists($objectName)) {
-			throw new ModularAuth_ObjectNotFoundException;
+			throw new ModularAuth_ObjectNotFoundException($objectName);
 		}
 		$object = new $objectName;
 
@@ -65,8 +65,8 @@ class ModularAuthUtility {
 		return $object;
 	}
 
-	public static function loadAuthenticator($name) {
-		
+	public static function loadAuthenticator($name, $type = 'Component') {
+		return self::loadLibrary($type, $name);
 	}
 
 	public static function normalize($name) {

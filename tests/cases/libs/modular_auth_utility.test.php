@@ -1,9 +1,59 @@
 <?php
 
-App::import('Lib', 'ModularAuth.ModularAuthUtility');
+App::import('Lib', array(
+	'ModularAuth.ModularAuthUtility',
+	'ModularAuth.ModularAuthenticator',
+), false);
+class MockModularAuthenticatorComponent extends ModularAuthenticator {}
+
+App::import('Component', 'Auth', false);
+App::import('Cntroller', 'Controller', false);
+Mock::generate('AuthComponent');
+Mock::generate('Controller');
 
 class ModularAuthUtilityTest extends CakeTestCase {
-	function testChangeState() {
+
+	public function endTest() {
+		ModularAuthUtility::deleteObject(array_keys(ModularAuthUtility::registeredObjects()));
+	}
+
+	public function testLoadLibrary() {
+		$this->assertIsA(ModularAuthUtility::loadLibrary('Component', 'Cookie'), 'CookieComponent');
+
+		ModularAuthUtility::registerObject('Auth', new MockAuthComponent);
+		ModularAuthUtility::registerObject('Controller', new MockController);
+		$Authenticator = ModularAuthUtility::loadLibrary('Component', 'MockModularAuthenticator');
+		$this->assertIsA($Authenticator, 'ModularAuthenticator');
+		$this->assertIsA($Authenticator->Auth, 'AuthComponent');
+		$this->assertIsA($Authenticator->Controller, 'Controller');
+		$this->assertTrue(array_key_exists('MockModularAuthenticator', ModularAuthUtility::registeredObjects()));
+
+		$Authenticators = ModularAuthUtility::loadLibrary('Lib', 'ModularAuth.ModularAuthenticators');
+		$this->assertIsA($Authenticators, 'ModularAuthenticators');
+		$this->assertIsA($Authenticators->Auth, 'AuthComponent');
+		$this->assertIsA($Authenticators->Controller, 'Controller');
+
+		$this->expectException('ModularAuth_ObjectNotFoundException');
+		ModularAuthUtility::loadLibrary('Core', 'WrongFile');
+	}
+
+	public function testLoadAuthenticator() {
+		ModularAuthUtility::registerObject('Auth', new MockAuthComponent);
+		ModularAuthUtility::registerObject('Controller', new MockController);
+		$Authenticator = ModularAuthUtility::loadAuthenticator('MockModularAuthenticator');
+		$this->assertIsA($Authenticator, 'MockModularAuthenticatorComponent');
+		$this->assertIsA($Authenticator->Auth, 'AuthComponent');
+		$this->assertIsA($Authenticator->Controller, 'Controller');
+		$this->assertTrue(array_key_exists('MockModularAuthenticator', ModularAuthUtility::registeredObjects()));
+
+	}
+
+	public function testNormalizeMethod() {
+		$this->assertEqual(ModularAuthUtility::normalize('hoge.piyo..fuga'), 'hoge_piyo__fuga');
+		$this->assertEqual(ModularAuthUtility::denormalize('hoge_piyo__fuga'), 'hoge.piyo..fuga');
+	}
+
+	public function testChangeState() {
 		$property = false;
 		$this->assertTrue(ModularAuthUtility::disableState($property, true));
 		$this->assertIdentical($property, true);
@@ -104,7 +154,7 @@ class ModularAuthUtilityTest extends CakeTestCase {
 		$this->assertIdentical($property, 'before');
 	}
 
-	function testObjectMethods() {
+	public function testObjectMethods() {
 		$destination = new Object;
 
 
@@ -141,5 +191,32 @@ class ModularAuthUtilityTest extends CakeTestCase {
 		$this->assertEqual(array_keys(ModularAuthUtility::registeredObjects()), array('Registered', 'One', 'Two', 'Three'));
 		ModularAuthUtility::deleteObject('One');
 		$this->assertEqual(array_keys(ModularAuthUtility::registeredObjects()), array('Registered', 'Two', 'Three'));
+
+		try {
+			ModularAuthUtility::bindObject($destination, 'UnredisteredObject');
+		} catch (Exception $e) {
+			$this->assertIsA($e, 'ModularAuth_UnregisteredObjectException');
+		}
+		if (!isset($e)) {
+			$this->fail('ModularAuthUtility::bindObject(UnredisteredObject)');
+		}
+
+		try {
+			ModularAuthUtility::unbindObject($destination, 'UnredisteredObject');
+		} catch (Exception $e) {
+			$this->assertIsA($e, 'ModularAuth_UnregisteredObjectException');
+		}
+		if (!isset($e)) {
+			$this->fail('ModularAuthUtility::unbindObject(UnredisteredObject)');
+		}
+
+		try {
+			ModularAuthUtility::deleteObject('UnredisteredObject');
+		} catch (Exception $e) {
+			$this->assertIsA($e, 'ModularAuth_UnregisteredObjectException');
+		}
+		if (!isset($e)) {
+			$this->fail('ModularAuthUtility::deleteObject(UnredisteredObject)');
+		}
 	}
 }

@@ -4,7 +4,7 @@ App::import('Lib', array(
 	'ModularAuth.ModularAuthUtility',
 ), false);
 
-abstract class ModularAuthenticator extends Overloadble {
+abstract class ModularAuthenticator extends Overloadable {
 	public $Controller;
 	public $Auth;
 

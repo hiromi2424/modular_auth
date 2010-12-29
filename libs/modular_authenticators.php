@@ -5,7 +5,7 @@ App::import('Lib', array(
 	'ModularAuth.ModularAuthenticator',
 ), false);
 
-class ModularAuthenticators extends Overloadble2 implements ArrayAccess {
+class ModularAuthenticators implements ArrayAccess {
 	public $Controller;
 	public $Auth;
 
@@ -89,21 +89,21 @@ class ModularAuthenticators extends Overloadble2 implements ArrayAccess {
 		return $this->__unset($name);
 	}
 
-	public function call__($method, $params) {
+	public function __call($method, $params) {
 		
 	}
 
-	public function get__($name) {
+	public function __get($name) {
 		if ($this->__isset($name)) {
 			return $this->_loaded[ModularAuthUtility::normalize($name)];
 		}
 		return null;
 	}
 
-	public function set__($name, $value) {
+	public function __set($name, $value) {
 
 		if (is_object($value)) {
-			if ($value instanceof 'ModularAuthenticator') {
+			if ($value instanceof ModularAuthenticator) {
 			} else {
 				throw new ModularAuth_IllegalAuthenticatorObjectException;
 			}
@@ -129,11 +129,11 @@ class ModularAuthenticators extends Overloadble2 implements ArrayAccess {
 	}
 
 	public function offsetGet($offset) {
-		return $this->get__($offset);
+		return $this->__get($offset);
 	}
 
 	public function offsetSet($offset, $value) {
-		return $this->set__($offset, $value);
+		return $this->__set($offset, $value);
 	}
 
 	public function offsetUnset($offset) {
