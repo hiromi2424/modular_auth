@@ -49,8 +49,9 @@ class ModularAuthUtilityTest extends CakeTestCase {
 	}
 
 	public function testNormalizeMethod() {
-		$this->assertEqual(ModularAuthUtility::normalize('hoge.piyo..fuga'), 'hoge_piyo__fuga');
-		$this->assertEqual(ModularAuthUtility::denormalize('hoge_piyo__fuga'), 'hoge.piyo..fuga');
+		$this->assertEqual(ModularAuthUtility::normalize('hoge.piyo_fuga'), 'Hoge_PiyoFuga');
+		$this->assertEqual(ModularAuthUtility::denormalize('Hoge_PiyoFuga'), 'Hoge.PiyoFuga');
+		$this->assertEqual(ModularAuthUtility::denormalize('hoge.piyo_fuga'), 'Hoge.PiyoFuga');
 	}
 
 	public function testChangeState() {
@@ -162,6 +163,7 @@ class ModularAuthUtilityTest extends CakeTestCase {
 		ModularAuthUtility::registerObject('registered', $registered);
 		ModularAuthUtility::bindObject($destination, 'registered');
 		$this->assertTrue($destination->Registered === $registered);
+		$this->assertTrue(ModularAuthUtility::isRegistered($registered));
 
 		$Registered = new Object;
 		$Registered->testVar = 1;
@@ -176,21 +178,30 @@ class ModularAuthUtilityTest extends CakeTestCase {
 		ModularAuthUtility::registerObject('one', new Object);
 		ModularAuthUtility::registerObject('two', new Object);
 		ModularAuthUtility::registerObject('three', new Object);
+		$this->assertTrue(ModularAuthUtility::isRegistered('One', 'Two', 'Three'));
+		$this->assertIsA(ModularAuthUtility::getObject('one'), 'Object');
+
 
 		ModularAuthUtility::bindObject($destination, array('one', array('two')), array(array(array('three'))));
 		$this->assertTrue(isset($destination->One));
 		$this->assertTrue(isset($destination->Two));
 		$this->assertTrue(isset($destination->Three));
-
 		ModularAuthUtility::unbindObject($destination, 'one', 'two', array(array('three', 'two', 'one')));
 
 		$this->assertFalse(isset($destination->One));
 		$this->assertFalse(isset($destination->Two));
 		$this->assertFalse(isset($destination->Three));
 
-		$this->assertEqual(array_keys(ModularAuthUtility::registeredObjects()), array('Registered', 'One', 'Two', 'Three'));
+		$this->assertTrue(ModularAuthUtility::isRegistered('Registered', 'One', 'Two', 'Three'));
 		ModularAuthUtility::deleteObject('One');
-		$this->assertEqual(array_keys(ModularAuthUtility::registeredObjects()), array('Registered', 'Two', 'Three'));
+		$this->assertFalse(ModularAuthUtility::isRegistered('Registered', 'One', 'Two', 'Three'));
+
+		$this->assertTrue(ModularAuthUtility::flushObjects());
+		$this->assertFalse(ModularAuthUtility::flushObjects());
+
+		$this->assertFalse(ModularAuthUtility::isRegistered($Registered));
+		$this->assertNull(ModularAuthUtility::isRegistered($fp = fopen(__FILE__, 'r')));
+		fclose($fp);
 
 		try {
 			ModularAuthUtility::bindObject($destination, 'UnredisteredObject');
@@ -208,6 +219,15 @@ class ModularAuthUtilityTest extends CakeTestCase {
 		}
 		if (!isset($e)) {
 			$this->fail('ModularAuthUtility::unbindObject(UnredisteredObject)');
+		}
+
+		try {
+			ModularAuthUtility::getObject('UnredisteredObject');
+		} catch (Exception $e) {
+			$this->assertIsA($e, 'ModularAuth_UnregisteredObjectException');
+		}
+		if (!isset($e)) {
+			$this->fail('ModularAuthUtility::getObject(UnredisteredObject)');
 		}
 
 		try {
