@@ -246,6 +246,11 @@ class ModularAuthUtilityTest extends CakeTestCase {
 		$this->assertNull(ModularAuthUtility::isRegistered($fp = fopen(__FILE__, 'r')));
 		fclose($fp);
 
+		ModularAuthUtility::registerObject('Auth', new MockAuthComponent);
+		ModularAuthUtility::registerObject('Controller', new MockController);
+		ModularAuthUtility::loadAuthenticator('MockModularAuthenticator');
+		$this->assertTrue(ModularAuthUtility::flushObjects());
+
 		try {
 			ModularAuthUtility::bindObject($destination, 'UnredisteredObject');
 			$this->fail('ModularAuthUtility::bindObject(UnredisteredObject) %s');

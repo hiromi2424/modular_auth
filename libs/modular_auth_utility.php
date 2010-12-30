@@ -77,8 +77,6 @@ class ModularAuthUtility {
 	public static function loadAuthenticator($name, $type = 'Component') {
 		$Authenticator = self::loadLibrary($type, $name);
 		self::registerObject($name, $Authenticator);
-		self::bindObject('Auth', $name);
-		self::$authenticators[] = self::normalize($name);
 		return $Authenticator;
 	}
 
@@ -105,13 +103,17 @@ class ModularAuthUtility {
 		}
 
 		self::$_registeredObjects[self::normalize($name)] = $object;
+		if ($object instanceof ModularAuthenticator) {
+			self::bindObject('Auth', $name);
+			self::$authenticators[] = self::normalize($name);
+		}
 	}
 
 	public static function getObject($name) {
 		$name = self::normalize($name);
 
 		if (!isset(self::$_registeredObjects[$name])) {
-			throw new ModularAuth_UnregisteredObjectException;
+			throw new ModularAuth_UnregisteredObjectException($name);
 		}
 		return self::$_registeredObjects[$name];
 	}
@@ -126,7 +128,7 @@ class ModularAuthUtility {
 
 		$name = self::normalize($name);
 		if (!isset(self::$_registeredObjects[$name])) {
-			throw new ModularAuth_UnregisteredObjectException;
+			throw new ModularAuth_UnregisteredObjectException($name);
 		}
 		if (false !== ($index = array_search($name, self::$authenticators))) {
 			self::unbindObject('Auth', $name);
@@ -139,6 +141,7 @@ class ModularAuthUtility {
 		if (empty(self::$_registeredObjects)) {
 			return false;
 		}
+		self::deleteObject(self::$authenticators);
 		self::deleteObject(array_keys(self::$_registeredObjects));
 		return true;
 	}
@@ -149,7 +152,7 @@ class ModularAuthUtility {
 		foreach ((array)$names as $name) {
 			$name = self::normalize($name);
 			if (!isset(self::$_registeredObjects[$name])) {
-				throw new ModularAuth_UnregisteredObjectException;
+				throw new ModularAuth_UnregisteredObjectException($name);
 			}
 			$destination->$name = self::$_registeredObjects[$name];
 		}
@@ -161,7 +164,7 @@ class ModularAuthUtility {
 		foreach ((array)$names as $name) {
 			$name = self::normalize($name);
 			if (!isset(self::$_registeredObjects[$name])) {
-				throw new ModularAuth_UnregisteredObjectException;
+				throw new ModularAuth_UnregisteredObjectException($name);
 			}
 			unset($destination->$name);
 		}
