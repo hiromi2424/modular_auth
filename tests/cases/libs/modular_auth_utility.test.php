@@ -14,20 +14,21 @@ Mock::generate('Controller');
 class ModularAuthUtilityTest extends CakeTestCase {
 
 	public function endTest() {
-		ModularAuthUtility::deleteObject(array_keys(ModularAuthUtility::registeredObjects()));
+		ModularAuthUtility::flushObjects();
 	}
 
 	public function testLoadLibrary() {
 		$this->assertIsA(ModularAuthUtility::loadLibrary('Component', 'Cookie'), 'CookieComponent');
 
+		try {
+			ModularAuthUtility::loadLibrary('Lib', 'ModularAuth.ModularAuthenticators');
+			$this->fail('Unexpected objects Controller, Auth was found %s');
+		} catch (Exception $e) {
+			$this->assertIsA($e, 'ModularAuth_UnregisteredObjectException');
+		}
+
 		ModularAuthUtility::registerObject('Auth', new MockAuthComponent);
 		ModularAuthUtility::registerObject('Controller', new MockController);
-		$Authenticator = ModularAuthUtility::loadLibrary('Component', 'MockModularAuthenticator');
-		$this->assertIsA($Authenticator, 'ModularAuthenticator');
-		$this->assertIsA($Authenticator->Auth, 'AuthComponent');
-		$this->assertIsA($Authenticator->Controller, 'Controller');
-		$this->assertTrue(array_key_exists('MockModularAuthenticator', ModularAuthUtility::registeredObjects()));
-
 		$Authenticators = ModularAuthUtility::loadLibrary('Lib', 'ModularAuth.ModularAuthenticators');
 		$this->assertIsA($Authenticators, 'ModularAuthenticators');
 		$this->assertIsA($Authenticators->Auth, 'AuthComponent');
@@ -44,11 +45,16 @@ class ModularAuthUtilityTest extends CakeTestCase {
 		$this->assertIsA($Authenticator, 'MockModularAuthenticatorComponent');
 		$this->assertIsA($Authenticator->Auth, 'AuthComponent');
 		$this->assertIsA($Authenticator->Controller, 'Controller');
-		$this->assertTrue(array_key_exists('MockModularAuthenticator', ModularAuthUtility::registeredObjects()));
+		$this->assertIsA($Authenticator->Auth->MockModularAuthenticator, 'ModularAuthenticator');
+		$this->assertTrue(ModularAuthUtility::isRegistered('MockModularAuthenticator'));
 
+		$this->assertEqual(ModularAuthUtility::$authenticators, array('MockModularAuthenticator'));
+		ModularAuthUtility::deleteObject('MockModularAuthenticator');
+		$this->assertEqual(ModularAuthUtility::$authenticators, array());
+		$this->assertFalse(isset($Authenticator->Auth->MockModularAuthenticator));
 	}
 
-	public function testNormalizeMethod() {
+	public function testNormalizeMethods() {
 		$this->assertEqual(ModularAuthUtility::normalize('hoge.piyo_fuga'), 'Hoge_PiyoFuga');
 		$this->assertEqual(ModularAuthUtility::denormalize('Hoge_PiyoFuga'), 'Hoge.PiyoFuga');
 		$this->assertEqual(ModularAuthUtility::denormalize('hoge.piyo_fuga'), 'Hoge.PiyoFuga');
@@ -155,6 +161,41 @@ class ModularAuthUtilityTest extends CakeTestCase {
 		$this->assertIdentical($property, 'before');
 	}
 
+	public function testCompareState() {
+		$this->assertIdentical(ModularAuthUtility::disabled(true, true), true);
+		$this->assertIdentical(ModularAuthUtility::disabled(true, 'before'), true);
+		$this->assertIdentical(ModularAuthUtility::disabled(true, 'after'), true);
+
+		$this->assertIdentical(ModularAuthUtility::disabled('before', true), true);
+		$this->assertIdentical(ModularAuthUtility::disabled('before', 'before'), true);
+		$this->assertIdentical(ModularAuthUtility::disabled('before', 'after'), false);
+
+		$this->assertIdentical(ModularAuthUtility::disabled('after', true), true);
+		$this->assertIdentical(ModularAuthUtility::disabled('after', 'before'), false);
+		$this->assertIdentical(ModularAuthUtility::disabled('after', 'after'), true);
+
+		$this->assertIdentical(ModularAuthUtility::disabled(false, true), false);
+		$this->assertIdentical(ModularAuthUtility::disabled(false, 'before'), false);
+		$this->assertIdentical(ModularAuthUtility::disabled(false, 'after'), false);
+
+
+		$this->assertIdentical(ModularAuthUtility::enabled(true, true), false);
+		$this->assertIdentical(ModularAuthUtility::enabled(true, 'before'), false);
+		$this->assertIdentical(ModularAuthUtility::enabled(true, 'after'), false);
+
+		$this->assertIdentical(ModularAuthUtility::enabled('before', true), false);
+		$this->assertIdentical(ModularAuthUtility::enabled('before', 'before'), false);
+		$this->assertIdentical(ModularAuthUtility::enabled('before', 'after'), true);
+
+		$this->assertIdentical(ModularAuthUtility::enabled('after', true), false);
+		$this->assertIdentical(ModularAuthUtility::enabled('after', 'before'), true);
+		$this->assertIdentical(ModularAuthUtility::enabled('after', 'after'), false);
+
+		$this->assertIdentical(ModularAuthUtility::enabled(false, true), true);
+		$this->assertIdentical(ModularAuthUtility::enabled(false, 'before'), true);
+		$this->assertIdentical(ModularAuthUtility::enabled(false, 'after'), true);
+	}
+
 	public function testObjectMethods() {
 		$destination = new Object;
 
@@ -186,8 +227,9 @@ class ModularAuthUtilityTest extends CakeTestCase {
 		$this->assertTrue(isset($destination->One));
 		$this->assertTrue(isset($destination->Two));
 		$this->assertTrue(isset($destination->Three));
+		ModularAuthUtility::bindObject('One', 'Two');
+		$this->assertTrue(isset($destination->One->Two));
 		ModularAuthUtility::unbindObject($destination, 'one', 'two', array(array('three', 'two', 'one')));
-
 		$this->assertFalse(isset($destination->One));
 		$this->assertFalse(isset($destination->Two));
 		$this->assertFalse(isset($destination->Three));
@@ -205,38 +247,30 @@ class ModularAuthUtilityTest extends CakeTestCase {
 
 		try {
 			ModularAuthUtility::bindObject($destination, 'UnredisteredObject');
+			$this->fail('ModularAuthUtility::bindObject(UnredisteredObject) %s');
 		} catch (Exception $e) {
 			$this->assertIsA($e, 'ModularAuth_UnregisteredObjectException');
-		}
-		if (!isset($e)) {
-			$this->fail('ModularAuthUtility::bindObject(UnredisteredObject)');
 		}
 
 		try {
 			ModularAuthUtility::unbindObject($destination, 'UnredisteredObject');
+			$this->fail('ModularAuthUtility::unbindObject(UnredisteredObject) %s');
 		} catch (Exception $e) {
 			$this->assertIsA($e, 'ModularAuth_UnregisteredObjectException');
-		}
-		if (!isset($e)) {
-			$this->fail('ModularAuthUtility::unbindObject(UnredisteredObject)');
 		}
 
 		try {
 			ModularAuthUtility::getObject('UnredisteredObject');
+			$this->fail('ModularAuthUtility::getObject(UnredisteredObject) %s');
 		} catch (Exception $e) {
 			$this->assertIsA($e, 'ModularAuth_UnregisteredObjectException');
-		}
-		if (!isset($e)) {
-			$this->fail('ModularAuthUtility::getObject(UnredisteredObject)');
 		}
 
 		try {
 			ModularAuthUtility::deleteObject('UnredisteredObject');
+			$this->fail('ModularAuthUtility::deleteObject(UnredisteredObject) %s');
 		} catch (Exception $e) {
 			$this->assertIsA($e, 'ModularAuth_UnregisteredObjectException');
-		}
-		if (!isset($e)) {
-			$this->fail('ModularAuthUtility::deleteObject(UnredisteredObject)');
 		}
 	}
 }

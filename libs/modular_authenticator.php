@@ -4,11 +4,11 @@ App::import('Lib', array(
 	'ModularAuth.ModularAuthUtility',
 ), false);
 
-abstract class ModularAuthenticator extends Overloadable {
+abstract class ModularAuthenticator {
 	public $Controller;
 	public $Auth;
 
-	protected $_enabled;
+	protected $_disabled;
 	protected $_disabledMethods = array();
 
 	public function init() {

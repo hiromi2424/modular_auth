@@ -10,26 +10,35 @@ class ModularAuthUtility {
 		'after' => array('after'),
 	);
 
+	public static $authenticators = array();
 	protected static $_registeredObjects = array();
 
-	public static function enableState(&$property, $modify) {
-		return self::_changeState(false, $property, $modify);
+	public static function enableState(&$disabled, $modify) {
+		return self::_changeState(false, $disabled, $modify);
 	}
 
-	public static function disableState(&$property, $modify) {
-		return self::_changeState(true, $property, $modify);
+	public static function disableState(&$disabled, $modify) {
+		return self::_changeState(true, $disabled, $modify);
 	}
 
-	protected static function _changeState($off, &$property, $modify) {
-		$propertyState = self::__state($property);
+	public static function enabled($disabled, $compare) {
+		return !self::_changeState(false, $disabled, $compare);
+	}
+
+	public static function disabled($disabled, $compare) {
+		return self::_changeState(false, $disabled, $compare);
+	}
+
+	protected static function _changeState($off, &$disabled, $modify) {
+		$disabledState = self::__state($disabled);
 		$modifyState = self::__state($modify);
 
-		$state = $off ? array_values(array_unique(array_merge($propertyState, $modifyState))) : array_diff($propertyState, $modifyState);
-		$propertyState = self::__state($state);
-		if ($property === $propertyState) {
+		$state = $off ? array_values(array_unique(array_merge($disabledState, $modifyState))) : array_diff($disabledState, $modifyState);
+		$modify = self::__state($state);
+		if ($disabled === $modify) {
 			return false;
 		}
-		$property = $propertyState;
+		$disabled = $modify;
 		return true;
 	}
 
@@ -58,15 +67,15 @@ class ModularAuthUtility {
 			self::bindObject($object, 'Controller', 'Auth');
 		}
 
-		if ($object instanceof ModularAuthenticator) {
-			self::registerObject(self::normalize($name), $object);
-		}
-
 		return $object;
 	}
 
 	public static function loadAuthenticator($name, $type = 'Component') {
-		return self::loadLibrary($type, $name);
+		$Authenticator = self::loadLibrary($type, $name);
+		self::registerObject($name, $Authenticator);
+		self::bindObject('Auth', $name);
+		self::$authenticators[] = self::normalize($name);
+		return $Authenticator;
 	}
 
 	public static function normalize($name) {
@@ -115,6 +124,10 @@ class ModularAuthUtility {
 		if (!isset(self::$_registeredObjects[$name])) {
 			throw new ModularAuth_UnregisteredObjectException;
 		}
+		if (false !== ($index = array_search($name, self::$authenticators))) {
+			self::unbindObject('Auth', $name);
+			unset(self::$authenticators[$index]);
+		}
 		unset(self::$_registeredObjects[$name]);
 	}
 
@@ -122,12 +135,12 @@ class ModularAuthUtility {
 		if (empty(self::$_registeredObjects)) {
 			return false;
 		}
-		self::$_registeredObjects = array();
+		self::deleteObject(array_keys(self::$_registeredObjects));
 		return true;
 	}
 
 	public static function bindObject($destination, $names) {
-		$names = self::__normalizeArguments(func_get_args());
+		list($destination, $names) = self::__normalizeArguments(func_get_args());
 
 		foreach ((array)$names as $name) {
 			$name = self::normalize($name);
@@ -139,7 +152,7 @@ class ModularAuthUtility {
 	}
 
 	public static function unbindObject($destination, $names) {
-		$names = self::__normalizeArguments(func_get_args());
+		list($destination, $names) = self::__normalizeArguments(func_get_args());
 
 		foreach ((array)$names as $name) {
 			$name = self::normalize($name);
@@ -171,13 +184,11 @@ class ModularAuthUtility {
 	}
 
 	private static function __normalizeArguments($args) {
-		array_shift($args);
-		return Set::flatten($args);
-	}
-
-	// for debug, test
-	public static function registeredObjects() {
-		return self::$_registeredObjects;
+		$destination = array_shift($args);
+		if (!is_object($destination)) {
+			$destination = self::getObject($destination);
+		}
+		return array($destination, Set::flatten($args));
 	}
 
 }

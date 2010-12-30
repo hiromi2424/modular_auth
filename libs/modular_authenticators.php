@@ -9,7 +9,6 @@ class ModularAuthenticators implements ArrayAccess {
 	public $Controller;
 	public $Auth;
 
-	protected $_loaded = array();
 	protected $_callbackDisabled = false;
 
 	public function init() {
@@ -17,33 +16,10 @@ class ModularAuthenticators implements ArrayAccess {
 	}
 
 	public function reset($authenticators = array()) {
-		if ($this->_loaded !== array()) {
-			$this->_loaded = array();
-		}
+		ModularAuthUtility::flushObjects();
 
-		foreach (Set::normalize((array)$authenticators) as $name  => $settings) {
-			$this->append($name, $settings);
-		}
-	}
-
-	public function get($name = null) {
-		if ($name === null) {
-			return array_keys($this->_loaded);
-		}
-		return $this->get__($name);
-	}
-
-	public function append($name, $settings = array()) {
-		try {
-			if (isset($this->$name)) {
-				$this->get($name)->configure($settings);
-			} else {
-				$Authenticator = ModularAuthUtility::loadLibrary('Component', $name);
-				ModularAuth::registerObjct($name, $Authenticator);
-				$Authenticator->configure($settings);
-			}
-		} catch (ModularAuth_ObjectNotFoundException $e) {
-			throw new ModularAuth_AuthenticatorNotFoundException;
+		foreach (Set::normalize($authenticators) as $name  => $settings) {
+			$this->__set($name, $settings);
 		}
 	}
 
@@ -53,6 +29,82 @@ class ModularAuthenticators implements ArrayAccess {
 
 	public function disable($callback = true) {
 		return ModularAuthUtility::disableState($this->_callbackDisabled, $callback);
+	}
+
+	public function enabled($callback = true) {
+		return ModularAuthUtility::enabled($this->_callbackDisabled, $callback);
+	}
+
+	private function disabled($callback = true) {
+		return ModularAuthUtility::disabled($this->_callbackDisabled, $callback);
+	}
+
+	public function get($name) {
+		return $this->__get($name);
+	}
+
+	public function append($name, $settings = array()) {
+		return $this->__set($name, $settings);
+	}
+
+	public function exists($name) {
+		return $this->__isset($name);
+	}
+
+	public function drop($name) {
+		return $this->__unset($name);
+	}
+
+	public function offsetGet($offset) {
+		return $this->__get($name);
+	}
+
+	public function offsetSet($offset, $value) {
+		return $this->__set($name, $settings);
+	}
+
+	public function offsetExists($offset) {
+		return $this->__isset($name);
+	}
+
+	public function offsetUnset($offset) {
+		return $this->__unset($name);
+	}
+
+	public function __get($name) {
+		return ModularAuthUtility::getObject($name);
+	}
+
+	public function __set($name, $value) {
+		try {
+			if (is_object($value)) {
+				if (!($value instanceof ModularAuthenticator)) {
+					throw new ModularAuth_IllegalAuthenticatorObjectException;
+				}
+				ModularAuthUtility::registerObject($name, $value);
+				return $this->__get($name);
+			} elseif (!$this->__isset($name)) {
+				$Authenticator = ModularAuthUtility::loadAuthenticator($name);
+			} else {
+				$Authenticator = $this->__get($name);
+			}
+			$Authenticator->configure($value);
+			return $Authenticator;
+		} catch (ModularAuth_ObjectNotFoundException $e) {
+			throw new ModularAuth_AuthenticatorNotFoundException;
+		}
+	}
+
+	public function __isset($name) {
+		return ModularAuthUtility::isRegistered($name);
+	}
+
+	public function __unset($name) {
+		return ModularAuthUtility::deleteObject($name);
+	}
+
+	public function __call($method, $params) {
+		
 	}
 
 	private function __delegate($method, $name, $params, $return = ture) {
@@ -83,60 +135,5 @@ class ModularAuthenticators implements ArrayAccess {
 			}
 			return call_user_func_array(array($this->$name, $method), $params);
 		}
-	}
-
-	public function drop($name) {
-		return $this->__unset($name);
-	}
-
-	public function __call($method, $params) {
-		
-	}
-
-	public function __get($name) {
-		if ($this->__isset($name)) {
-			return $this->_loaded[ModularAuthUtility::normalize($name)];
-		}
-		return null;
-	}
-
-	public function __set($name, $value) {
-
-		if (is_object($value)) {
-			if ($value instanceof ModularAuthenticator) {
-			} else {
-				throw new ModularAuth_IllegalAuthenticatorObjectException;
-			}
-		} elseif (is_array($value)) {
-			$this->append($name, $value);
-		}
-	}
-
-	public function __isset($name) {
-		return isset($this->_loaded[ModularAuthUtility::normalize($name)]);
-	}
-
-	public function __unset($name) {
-		if ($this->__isset($name)) {
-			unset($this->_loaded[ModularAuthUtility::normalize($name)]);
-			return true;
-		}
-		return false;
-	}
-
-	public function offsetExists($offset) {
-		return $this->__isset($offset);
-	}
-
-	public function offsetGet($offset) {
-		return $this->__get($offset);
-	}
-
-	public function offsetSet($offset, $value) {
-		return $this->__set($offset, $value);
-	}
-
-	public function offsetUnset($offset) {
-		return $this->__unset($offset);
 	}
 }
