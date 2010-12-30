@@ -26,7 +26,7 @@ abstract class BaseModularAuthComponent extends AuthComponent {
 		}
 		$Authenticators = ModularAuthUtility::loadLibrary('Lib', $this->collector);
 		ModularAuthUtility::regsiterObject(compact('Authenticators'));
-		$Authenticators->init();
+		$Authenticators->configure($settings);
 
 		if (isset($settings['authenticators'])) {
 			$Authenticators->reset($setting['authenticators']);

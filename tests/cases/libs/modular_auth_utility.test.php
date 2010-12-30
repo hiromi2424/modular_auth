@@ -18,6 +18,7 @@ class ModularAuthUtilityTest extends CakeTestCase {
 	}
 
 	public function testLoadLibrary() {
+
 		$this->assertIsA(ModularAuthUtility::loadLibrary('Component', 'Cookie'), 'CookieComponent');
 
 		try {

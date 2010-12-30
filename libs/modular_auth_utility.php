@@ -1,6 +1,9 @@
 <?php
 
-App::import('Lib', 'ModularAuth.ModularAuthException', false);
+App::import('Lib', array(
+	'ModularAuth.ModularAuthException',
+	'ModularAuth.ModularAuthBaseObject',
+), false);
 
 class ModularAuthUtility {
 	private static $__stateTable = array(
@@ -63,8 +66,9 @@ class ModularAuthUtility {
 		}
 		$object = new $objectName;
 
-		if ($object instanceof ModularAuthenticator || $object instanceof ModularAuthenticators) {
+		if ($object instanceof ModularAuthBaseObject) {
 			self::bindObject($object, 'Controller', 'Auth');
+			$object->init();
 		}
 
 		return $object;
