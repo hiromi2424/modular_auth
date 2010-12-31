@@ -1,17 +1,11 @@
 <?php
 
-App::import('Lib', 'ModularAuth.ModularAuthBaseObject');
+App::import('Lib', 'ModularAuth.ModularAuthTestCase', false, array(App::pluginPath('ModularAuth') . 'tests' . DS . 'lib'));
 
-Mock::generatePartial('ModularAuthBaseObject', 'MockModularAuthBaseObject', array('log'));
-
-class ModularAuthBaseObjectTestCase extends CakeTestCase {
+class ModularAuthBaseObjectTestCase extends ModularAuthTestCase {
 
 	function startTest() {
 		$this->TestObject = new MockModularAuthBaseObject;
-	}
-
-	public function endTest() {
-		ModularAuthUtility::flushObjects();
 	}
 
 	public function testStateMethods() {
@@ -71,6 +65,9 @@ class ModularAuthBaseObjectTestCase extends CakeTestCase {
 	}
 
 	function testConfigure() {
+		$this->TestObject->configure(null);
+		$this->assertTrue($this->TestObject->enabled(), 'null can be handled: %s');
+
 		$this->TestObject->configure(array());
 		$this->assertTrue($this->TestObject->enabled(), 'nothing happen with empty array(): %s');
 

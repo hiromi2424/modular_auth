@@ -2,7 +2,7 @@
 
 class ModularAuthException extends Exception {
 	public function __construct($message = null, $code = 0, Exception $previous = null) {
-		if (false) {
+		if (Configure::read('ModularAuth.debug_trace')) {
 			$trace = "\n" . Debugger::trace(array('start' => 1));
 			var_dump($trace);
 		}
@@ -16,3 +16,4 @@ class ModularAuth_AuthenticatorNotFoundException extends ModularAuthException {}
 class ModularAuth_IllegalAuthenticatorMethodException extends ModularAuthException {}
 class ModularAuth_IllegalAuthenticatorObjectException extends ModularAuthException {}
 class ModularAuth_IllegalArgumentsException extends ModularAuthException {}
+class ModularAuth_IllegalArgumentException extends ModularAuthException {}

@@ -29,7 +29,7 @@ abstract class BaseModularAuthComponent extends AuthComponent {
 		$Authenticators->configure($settings);
 
 		if (isset($settings['authenticators'])) {
-			$Authenticators->reset($setting['authenticators']);
+			$Authenticators->append($setting['authenticators']);
 			unset($settings['authenticators']);
 		}
 		ModularAuthUtility::bindObject($this, 'Controller', 'Authenticators');

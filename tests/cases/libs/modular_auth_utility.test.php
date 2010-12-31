@@ -1,21 +1,8 @@
 <?php
 
-App::import('Lib', array(
-	'ModularAuth.ModularAuthUtility',
-	'ModularAuth.ModularAuthenticator',
-), false);
-class MockModularAuthenticatorComponent extends ModularAuthenticator {}
+App::import('Lib', 'ModularAuth.ModularAuthTestCase', false, array(App::pluginPath('ModularAuth') . 'tests' . DS . 'lib'));
 
-App::import('Component', 'Auth', false);
-App::import('Cntroller', 'Controller', false);
-Mock::generate('AuthComponent');
-Mock::generate('Controller');
-
-class ModularAuthUtilityTest extends CakeTestCase {
-
-	public function endTest() {
-		ModularAuthUtility::flushObjects();
-	}
+class ModularAuthUtilityTest extends ModularAuthTestCase {
 
 	public function testLoadLibrary() {
 
@@ -28,8 +15,8 @@ class ModularAuthUtilityTest extends CakeTestCase {
 			$this->assertIsA($e, 'ModularAuth_UnregisteredObjectException');
 		}
 
-		ModularAuthUtility::registerObject('Auth', new MockAuthComponent);
-		ModularAuthUtility::registerObject('Controller', new MockController);
+		ModularAuthUtility::registerObject('Auth', $this->Auth);
+		ModularAuthUtility::registerObject('Controller', $this->Controller);
 		$Authenticators = ModularAuthUtility::loadLibrary('Lib', 'ModularAuth.ModularAuthenticators');
 		$this->assertIsA($Authenticators, 'ModularAuthenticators');
 		$this->assertIsA($Authenticators->Auth, 'AuthComponent');
@@ -40,8 +27,8 @@ class ModularAuthUtilityTest extends CakeTestCase {
 	}
 
 	public function testLoadAuthenticator() {
-		ModularAuthUtility::registerObject('Auth', new MockAuthComponent);
-		ModularAuthUtility::registerObject('Controller', new MockController);
+		ModularAuthUtility::registerObject('Auth', $this->Auth);
+		ModularAuthUtility::registerObject('Controller', $this->Controller);
 		$Authenticator = ModularAuthUtility::loadAuthenticator('MockModularAuthenticator');
 		$this->assertIsA($Authenticator, 'MockModularAuthenticatorComponent');
 		$this->assertIsA($Authenticator->Auth, 'AuthComponent');
@@ -57,8 +44,14 @@ class ModularAuthUtilityTest extends CakeTestCase {
 
 	public function testNormalizeMethods() {
 		$this->assertEqual(ModularAuthUtility::normalize('hoge.piyo_fuga'), 'Hoge_PiyoFuga');
-		$this->assertEqual(ModularAuthUtility::denormalize('Hoge_PiyoFuga'), 'Hoge.PiyoFuga');
+		$this->assertEqual(ModularAuthUtility::normalize('Hoge.PiyoFuga'), 'Hoge_PiyoFuga');
+		$this->assertEqual(ModularAuthUtility::normalize('Hoge_PiyoFuga'), 'Hoge_PiyoFuga');
 		$this->assertEqual(ModularAuthUtility::denormalize('hoge.piyo_fuga'), 'Hoge.PiyoFuga');
+		$this->assertEqual(ModularAuthUtility::denormalize('Hoge.PiyoFuga'), 'Hoge.PiyoFuga');
+		$this->assertEqual(ModularAuthUtility::denormalize('Hoge_PiyoFuga'), 'Hoge.PiyoFuga');
+
+		$this->assertEqual(ModularAuthUtility::normalize('hoge_moge.piyo_fuga'), 'HogeMoge_PiyoFuga');
+		$this->assertEqual(ModularAuthUtility::denormalize('hoge_moge.piyo_fuga'), 'HogeMoge.PiyoFuga');
 	}
 
 	public function testChangeState() {
@@ -246,8 +239,8 @@ class ModularAuthUtilityTest extends CakeTestCase {
 		$this->assertNull(ModularAuthUtility::isRegistered($fp = fopen(__FILE__, 'r')));
 		fclose($fp);
 
-		ModularAuthUtility::registerObject('Auth', new MockAuthComponent);
-		ModularAuthUtility::registerObject('Controller', new MockController);
+		ModularAuthUtility::registerObject('Auth', $this->Auth);
+		ModularAuthUtility::registerObject('Controller', $this->Controller);
 		ModularAuthUtility::loadAuthenticator('MockModularAuthenticator');
 		$this->assertTrue(ModularAuthUtility::flushObjects());
 

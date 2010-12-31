@@ -16,7 +16,7 @@ abstract class ModularAuthBaseObject extends Object {
 	}
 
 	public function configure($settings) {
-		extract($settings);
+		extract((array)$settings);
 		if (isset($disable)) {
 			$this->disable($disable);
 		}

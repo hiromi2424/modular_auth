@@ -1,6 +1,6 @@
 <?php
 
-App::import('Component', 'ModularAuth.BasePlugagbleAuth');
+App::import('Component', 'ModularAuth.BaseModularAuth');
 
 if (!App::import('Component', 'AppModularAuth')) {
 	App::import('Component', 'ModularAuth.AppModularAuth');

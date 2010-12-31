@@ -7,11 +7,59 @@ App::import('Lib', array(
 
 class ModularAuthenticators extends ModularAuthBaseObject implements ArrayAccess {
 
-	public function reset($authenticators = array()) {
-		ModularAuthUtility::flushObjects();
+	protected $_results;
+	protected $_name;
+	protected $_return;
+	protected $_params;
 
-		foreach (Set::normalize($authenticators) as $name  => $settings) {
-			$this->__set($name, $settings);
+	public function triggerCallback($callback, $method, $params, $return = 'boolean') {
+		$this->_params = $params;
+		$this->_return = $return;
+		$this->_results = array();
+		if (!empty(ModularAuthUtility::$authenticators) && $this->methodEnabled($method, $callback)) {
+			foreach (ModularAuthUtility::$authenticators as $this->_name) {
+				$result = $this->__get($this->_name)->dispatchMethod($method, $callback, $this->_params, $return);
+				if (!$this->_filterResult($result)) {
+					return false;
+				}
+			}
+		}
+		return $this->_filterResults();
+	}
+
+	protected function _filterResult($result) {
+		switch ($this->_return) {
+			case false:
+				break;
+			case 'boolean':
+				if (!$result) {
+					return false;
+				}
+				break;
+			case 'enchain':
+				$this->_params = (array)$result;
+				break;
+			case 'array':
+				$this->_results[$this->_name] = $result;
+				break;
+			default:
+				throw new ModularAuth_IllegalArgumentException("\$return = $this->_return");
+		}
+		return true;
+	}
+
+	protected function _filterResults() {
+		switch ($this->_return) {
+			case false:
+				return null;
+			case 'boolean':
+				return empty($this->_results);
+			case 'enchain':
+				return current($this->_params);
+			case 'array':
+				return $this->_results;
+			default:
+				throw new ModularAuth_IllegalArgumentException("\$return = $this->_return");
 		}
 	}
 
@@ -20,6 +68,12 @@ class ModularAuthenticators extends ModularAuthBaseObject implements ArrayAccess
 	}
 
 	public function append($name, $settings = array()) {
+		if (is_array($name)) {
+			foreach (Set::normalize($name) as $n => $settings) {
+				$this->__set($n, $settings);
+			}
+			return true;
+		}
 		return $this->__set($name, $settings);
 	}
 
@@ -32,19 +86,19 @@ class ModularAuthenticators extends ModularAuthBaseObject implements ArrayAccess
 	}
 
 	public function offsetGet($offset) {
-		return $this->__get($name);
+		return $this->__get($offset);
 	}
 
 	public function offsetSet($offset, $value) {
-		return $this->__set($name, $settings);
+		return $this->__set($offset, $value);
 	}
 
 	public function offsetExists($offset) {
-		return $this->__isset($name);
+		return $this->__isset($offset);
 	}
 
 	public function offsetUnset($offset) {
-		return $this->__unset($name);
+		return $this->__unset($offset);
 	}
 
 	public function __get($name) {
@@ -67,7 +121,7 @@ class ModularAuthenticators extends ModularAuthBaseObject implements ArrayAccess
 			$Authenticator->configure($value);
 			return $Authenticator;
 		} catch (ModularAuth_ObjectNotFoundException $e) {
-			throw new ModularAuth_AuthenticatorNotFoundException;
+			throw new ModularAuth_AuthenticatorNotFoundException($e->getMessage());
 		}
 	}
 
@@ -77,50 +131,5 @@ class ModularAuthenticators extends ModularAuthBaseObject implements ArrayAccess
 
 	public function __unset($name) {
 		return ModularAuthUtility::deleteObject($name);
-	}
-
-	public function triggerCallback($callback, $method, $params, $return = true) {
-		if ($this->methodEnabled($method, $callback)) {
-			return $this->__delegete($callback ,$method, null, $params, $return);
-		}
-		return true;
-	}
-
-	private function __delegate($callback, $method, $name, $params, $return = ture) {
-		if ($name === null) {
-			$name = ModularAuthUtility::$authenticators;
-		}
-
-		if (is_array($name)) {
-			$results = array();
-			foreach ($name as $n) {
-				$results[$n] = $this->__delegate($callback, $method, $n, $params, $return);
-				if ($return === 'boolean' && !$results[$n]) {
-					return false;
-				}
-			}
-			switch ($return) {
-				case 'boolean':
-					return true;
-				case false:
-					return null;
-				case true:
-				default:
-					return $results;
-			}
-		}
-
-		$Authenticator = $this->__get($name);
-		if (!is_callable(array($Authenticator, $method))) {
-			throw new ModularAuth_IllegalAuthenticatorMethodException;
-		}
-		if ($Authenticator->methodEnabled($method, $callback)) {
-			return call_user_func_array(array($Authenticator, $callback . $method), $params);
-		}
-
-		if ($return === 'boolean') {
-			return true;
-		}
-		return null;
 	}
 }

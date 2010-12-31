@@ -81,6 +81,7 @@ class ModularAuthUtility {
 	}
 
 	public static function normalize($name) {
+		$name = self::denormalize($name);
 		list($plugin, $name) = pluginSplit($name, true);
 		return str_replace('.', '_', Inflector::camelize($plugin) . Inflector::camelize($name));
 	}
