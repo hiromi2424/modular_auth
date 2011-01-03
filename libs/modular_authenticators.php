@@ -6,13 +6,20 @@ App::import('Lib', array(
 ), false);
 
 class ModularAuthenticators extends ModularAuthBaseObject implements ArrayAccess {
+	public $interrupted = false;
 
 	protected $_results;
 	protected $_name;
 	protected $_return;
 	protected $_params;
 
+
+	public function interruptResult($interrupt = true) {
+		$this->interrupted = !!$interrupt;
+	}
+
 	public function triggerCallback($callback, $method, $params, $return = 'boolean') {
+		$this->interrupted = false;
 		$this->_params = $params;
 		$this->_return = $return;
 		$this->_results = array();
@@ -20,7 +27,7 @@ class ModularAuthenticators extends ModularAuthBaseObject implements ArrayAccess
 			foreach (ModularAuthUtility::$authenticators as $this->_name) {
 				$result = $this->__get($this->_name)->dispatchMethod($method, $callback, $this->_params, $return);
 				if (!$this->_filterResult($result)) {
-					return false;
+					return $result;
 				}
 			}
 		}
@@ -28,6 +35,9 @@ class ModularAuthenticators extends ModularAuthBaseObject implements ArrayAccess
 	}
 
 	protected function _filterResult($result) {
+		if ($this->interrupted) {
+			return false;
+		}
 		switch ($this->_return) {
 			case false:
 				break;
@@ -37,7 +47,7 @@ class ModularAuthenticators extends ModularAuthBaseObject implements ArrayAccess
 				}
 				break;
 			case 'enchain':
-				$this->_params = (array)$result;
+				$this->_params = array($result);
 				break;
 			case 'array':
 				$this->_results[$this->_name] = $result;

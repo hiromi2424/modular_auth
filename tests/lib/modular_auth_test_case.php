@@ -14,13 +14,13 @@ App::import('Component', 'Auth', false);
 App::import('Component', 'ModularAuth.ModularAuth', false);
 
 Mock::generate('Controller');
-Mock::generate('AuthComponent');
+Mock::generate('ModularAuthComponent');
 Mock::generatePartial('ModularAuthBaseObject', 'MockModularAuthBaseObject', array('log'));
 
 class ModularAuthTestCase extends CakeTestCase {
 
 	public function startCase() {
-		$this->Auth = new MockAuthComponent;
+		$this->Auth = new MockModularAuthComponent;
 		$this->Controller = new MockController;
 	}
 

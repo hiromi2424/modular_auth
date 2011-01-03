@@ -27,10 +27,16 @@ abstract class ModularAuthenticator extends ModularAuthBaseObject {
 
 	protected $_overridedResult;
 	protected $_resultOverrided = false;
+	protected $_interrupted = false;
 
 	public function overrideResult($result) {
 		$this->_overridedResult = $result;
 		$this->_resultOverrided = true;
+	}
+
+	public function interrupt() {
+		$this->Auth->Authenticators->interruptResult();
+		$this->_interrupted = true;
 	}
 
 	protected function _callbackAvailable($method, $callback) {
@@ -45,28 +51,40 @@ abstract class ModularAuthenticator extends ModularAuthBaseObject {
 
 	public function dispatchMethod($method, $callback, $params, $return) {
 		if (!$this->_callbackAvailable($method, $callback)) {
-			if ($return === 'enchain') {
-				return $params;
-			}
-			if ($return === 'boolean') {
-				return true;
-			}
-			return null;
+			return $this->_filterResult($params, $return);
 		}
 
-		$result = $this->{$callback . $method}($params);
+		$result = $this->{$callback . $method}($params)
+		return $this->_filterResult($params, $return, $result);
+	}
 
-		if ($return === 'enchain') {
-			if ($this->_resultOverrided) {
-				$result = $this->_overridedResult;
-				$this->_resultOverrided = false;
-			} else {
-				$result = $params;
+	protected function _filterResult($params, $return, $result = null) {
+		if ($this->_interrupted) {
+			$this->_interrupted = false;
+		} else {
+			switch ($return) {
+				case 'enchain':
+					if ($this->_resultOverrided) {
+						$result = $this->_overridedResult;
+						$this->_resultOverrided = false;
+					} else {
+						$result = $params;
+					}
+					break;
+				case 'boolean':
+					if ($return === 'boolean' && $result === null) {
+						$result = true;
+					}
+					break;
 			}
-		} elseif ($return === 'boolean' && $result === null) {
-			$result = true;
 		}
 		return $result;
+	}
+
+	// alias for $this->alias->callParent()
+	public function callParent($method) {
+		$args = func_get_args();
+		return call_user_func_array(array($this->Auth, 'callParent'), $args);
 	}
 }
 

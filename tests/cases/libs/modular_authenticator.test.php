@@ -42,4 +42,11 @@ class ModularAuthenticatorTestCase extends ModularAuthTestCase {
 			$this->assertIsA($e, 'ModularAuth_IllegalAuthenticatorMethodException');
 		}
 	}
+
+	public function testCallParent() {
+		$this->Auth->setReturnValue('callParent', false, array('login'));
+		$this->Auth->setReturnValue('callParent', true, array('login', 'success'));
+		$this->assertFalse($this->Authenticator->callParent('login'));
+		$this->assertTrue($this->Authenticator->callParent('login', 'success'));
+	}
 }
