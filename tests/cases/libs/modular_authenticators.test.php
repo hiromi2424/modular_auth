@@ -4,10 +4,12 @@ App::import('Lib', 'ModularAuth.ModularAuthTestCase', false, array(App::pluginPa
 
 class ModularAuthenticatorsTestCase extends ModularAuthTestCase {
 
-	function startTest() {
+	function startTest($method) {
 		ModularAuthUtility::registerObject('Auth', $this->Auth);
 		ModularAuthUtility::registerObject('Controller', $this->Controller);
 		$this->Authenticators = new ModularAuthenticators;
+		$this->Auth->Authenticators = $this->Authenticators;
+		parent::startTest($method);
 	}
 
 	public function testObjectMethod() {
@@ -99,5 +101,10 @@ class ModularAuthenticatorsTestCase extends ModularAuthTestCase {
 			$this->assertIsA($e, 'ModularAuth_IllegalArgumentException');
 			$this->assertEqual($e->getMessage(), '$return = undefined return type');
 		}
+	}
+
+	function testInterruption() {
+		$this->Authenticators->append('MockModularAuthenticator');
+		$this->assertEqual($this->Authenticators->triggerCallback('before', 'login', array()), 'interrupted');
 	}
 }

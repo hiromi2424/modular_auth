@@ -36,11 +36,11 @@ abstract class BaseModularAuthComponent extends AuthComponent {
 		return $settings;
 	}
 
-	public function callParent($method) {
-		$args = func_get_args();
-		/* $method = */ array_shift($args);
-
-		return call_user_func_array(array('parent', $method), $args);
+	public function callParent($method, $params = array()) {
+		if (!method_exists('AuthComponent', $method)) {
+			throw new ModularAuth_IllegalAuthComponentMethodException($method);
+		}
+		return call_user_func_array(array('parent', $method), $params);
 	}
 
 	public function disableCallBack($callback = true) {
@@ -54,8 +54,7 @@ abstract class BaseModularAuthComponent extends AuthComponent {
 	protected function _dispatch($method, $params, $beforeReturn = 'boolean', $afterRetrun = 'enchain') {
 		$result = $this->Authenticators->triggerCallback('before', $method, $params, $beforeReturn);
 		if (!$this->Authenticators->interrupted) {
-			array_unshift($params, $method);
-			$result = $this->dispatchMethod('callParent', $params);
+			$result = $this->callParent($method, $params);
 		}
 		$result = $this->Authenticators->triggerCallback('after', $method, array($result), $afterRetrun);
 		return $result;

@@ -23,6 +23,11 @@ class MockModularAuthenticatorComponent extends ModularAuthenticator {
 
 	function beforeShutdown() {
 	}
+
+	function beforeLogin() {
+		$this->interrupt();
+		return 'interrupted';
+	}
 }
 
 class FirstMockModularAuthenticatorComponent extends ModularAuthenticator {

@@ -45,8 +45,23 @@ class ModularAuthenticatorTestCase extends ModularAuthTestCase {
 
 	public function testCallParent() {
 		$this->Auth->setReturnValue('callParent', false, array('login'));
-		$this->Auth->setReturnValue('callParent', true, array('login', 'success'));
+		$this->Auth->setReturnValue('callParent', true, array('login', array('success')));
 		$this->assertFalse($this->Authenticator->callParent('login'));
 		$this->assertTrue($this->Authenticator->callParent('login', 'success'));
+	}
+
+	public function testMagickCallParent() {
+		$this->Auth->setReturnValue('callParent', false, array('login'));
+		$this->Auth->setReturnValue('callParent', true, array('login', array('success')));
+		$this->assertFalse($this->Authenticator->parentLogin());
+		$this->assertTrue($this->Authenticator->parentLogin('success'));
+
+		$this->expectException('ModularAuth_IllegalAuthComponentMethodException');
+		$this->Authenticator->parentUndefinedMethod();
+	}
+
+	function testInterrupt() {
+		$this->Auth->Authenticators = ModularAuthUtility::loadLibrary('Lib', 'ModularAuthenticators');
+		$this->assertIdentical($this->Authenticator->dispatchMethod('login', 'before', array(), 'boolean'), 'interrupted');
 	}
 }

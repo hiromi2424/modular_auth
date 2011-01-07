@@ -16,15 +16,18 @@ App::import('Component', 'ModularAuth.ModularAuth', false);
 Mock::generate('Controller');
 Mock::generate('ModularAuthComponent');
 Mock::generatePartial('ModularAuthBaseObject', 'MockModularAuthBaseObject', array('log'));
+Mock::generatePartial('BaseModularAuthComponent', 'MockBaseModularAuthComponent', array('log'));
 
-class ModularAuthTestCase extends CakeTestCase {
+abstract class ModularAuthTestCase extends CakeTestCase {
 
 	public function startCase() {
 		$this->Auth = new MockModularAuthComponent;
 		$this->Controller = new MockController;
+		parent::startCase();
 	}
 
-	public function endTest() {
+	public function endTest($method) {
 		ModularAuthUtility::flushObjects();
+		parent::endTest($method);
 	}
 }
