@@ -37,6 +37,14 @@ class ModularAuthenticatorsTestCase extends ModularAuthTestCase {
 			$this->assertIsA($e, 'ModularAuth_AuthenticatorNotFoundException');
 		}
 
+		try {
+			$this->Authenticators->append(null);
+			$this->fail('empty name');
+		} catch (Exception $e) {
+			$this->assertIsA($e, 'ModularAuth_IllegalAuthenticatorNameException');
+			$this->assertIdentical($e->getMessage(), 'NULL');
+		}
+
 		$this->expectException('ModularAuth_IllegalAuthenticatorObjectException');
 		$this->Authenticators->append('Hoge', new Object);
 	}

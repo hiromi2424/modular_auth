@@ -57,7 +57,7 @@ abstract class ModularAuthenticator extends ModularAuthBaseObject {
 			switch ($return) {
 				case 'enchain':
 					if ($this->_resultOverrided) {
-						$result = $this->_overridedResult;
+						$result = array($this->_overridedResult);
 						$this->_resultOverrided = false;
 					} else {
 						$result = $params;

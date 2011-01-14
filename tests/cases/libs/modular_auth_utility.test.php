@@ -36,7 +36,7 @@ class ModularAuthUtilityTest extends ModularAuthTestCase {
 		$this->assertIsA($Authenticator->Auth->MockModularAuthenticator, 'ModularAuthenticator');
 		$this->assertTrue(ModularAuthUtility::isRegistered('MockModularAuthenticator'));
 
-		$this->assertEqual(ModularAuthUtility::$authenticators, array('MockModularAuthenticator'));
+		$this->assertEqual(array_values(ModularAuthUtility::$authenticators), array('MockModularAuthenticator'));
 		ModularAuthUtility::deleteObject('MockModularAuthenticator');
 		$this->assertEqual(ModularAuthUtility::$authenticators, array());
 		$this->assertFalse(isset($Authenticator->Auth->MockModularAuthenticator));

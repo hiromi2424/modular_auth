@@ -47,7 +47,7 @@ class ModularAuthenticators extends ModularAuthBaseObject implements ArrayAccess
 				}
 				break;
 			case 'enchain':
-				$this->_params = array($result);
+				$this->_params = $result;
 				break;
 			case 'array':
 				$this->_results[$this->_name] = $result;
@@ -117,9 +117,11 @@ class ModularAuthenticators extends ModularAuthBaseObject implements ArrayAccess
 
 	public function __set($name, $value) {
 		try {
-			if (is_object($value)) {
+			if (empty($name)) {
+				throw new ModularAuth_IllegalAuthenticatorNameException(var_export($name, true));
+			} elseif (is_object($value)) {
 				if (!($value instanceof ModularAuthenticator)) {
-					throw new ModularAuth_IllegalAuthenticatorObjectException;
+					throw new ModularAuth_IllegalAuthenticatorObjectException(get_class($value));
 				}
 				ModularAuthUtility::registerObject($name, $value);
 				return $this->__get($name);

@@ -10,6 +10,20 @@ class ModularAuthenticatorTestCase extends ModularAuthTestCase {
 		$this->Authenticator = ModularAuthUtility::loadAuthenticator('MockModularAuthenticator');
 	}
 
+	function testInit() {
+		$this->Authenticator = new MockModularAuthenticatorComponent;
+		$this->Authenticator->init();
+		$expectedMethods = array(
+			'initialize', 'startup', 'isAuthorized', 'allow', 'deny',
+			'mapActions', 'login', 'logout', 'user', 'redirect',
+			'validate', 'action', 'getModel', 'identify', 'hashPasswords', 
+			'password', 'shutdown',
+		);
+		foreach ($expectedMethods as $method) {
+			$this->assertTrue($this->Authenticator->methodEnabled($method), $method);
+		}
+	}
+
 	public function testDispatchMethod() {
 		// ModularAuthenticator::dispatchMethod($method, $callback, $params, $return)
 		$this->assertTrue($this->Authenticator->dispatchMethod('validate', 'before', array(), false));
@@ -20,7 +34,7 @@ class ModularAuthenticatorTestCase extends ModularAuthTestCase {
 		$this->assertFalse($this->Authenticator->dispatchMethod('password', 'before', array(), 'boolean'));
 		$this->assertTrue($this->Authenticator->dispatchMethod('shutdown', 'before', array(), 'boolean'));
 
-		$this->assertIdentical($this->Authenticator->dispatchMethod('validate', 'after', array('result'), 'enchain'), 'hoge');
+		$this->assertIdentical($this->Authenticator->dispatchMethod('validate', 'after', array('result'), 'enchain'), array('hoge'));
 		$this->assertIdentical($this->Authenticator->dispatchMethod('password', 'after', array('result'), 'enchain'), array('result'));
 
 		$this->assertIdentical($this->Authenticator->dispatchMethod('action', 'after', array('result'), false), null);

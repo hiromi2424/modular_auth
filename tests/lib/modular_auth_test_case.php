@@ -1,8 +1,8 @@
 <?php
 
 App::import('Lib', array(
-	'ModularAuth.ModularAuthBaseObject',
-	'ModularAuth.ModularAuthBaseObject',
+	'ModularAuth.ModularAuthException',
+	'ModularAuth.ModularAuthUtility',
 	'ModularAuth.ModularAuthBaseObject',
 	'ModularAuth.ModularAuthenticators',
 	'ModularAuth.ModularAuthenticator',
@@ -16,6 +16,7 @@ App::import('Component', 'ModularAuth.ModularAuth', false);
 Mock::generate('Controller');
 Mock::generate('ModularAuthComponent');
 Mock::generatePartial('ModularAuthBaseObject', 'MockModularAuthBaseObject', array('log'));
+Mock::generatePartial('ModularAuthenticators', 'MockModularAuthenticators', array('log'));
 Mock::generatePartial('BaseModularAuthComponent', 'MockBaseModularAuthComponent', array('log'));
 
 abstract class ModularAuthTestCase extends CakeTestCase {
