@@ -6,10 +6,10 @@ class ModularAuthUtilityTest extends ModularAuthTestCase {
 
 	public function testLoadLibrary() {
 
-		$this->assertIsA(ModularAuthUtility::loadLibrary('Component', 'Cookie'), 'CookieComponent');
+		$this->assertIsA(ModularAuthUtility::loadLibrary('Core', 'Object'), 'Object');
 
 		try {
-			ModularAuthUtility::loadLibrary('Lib', 'ModularAuth.ModularAuthenticators');
+			ModularAuthUtility::loadLibrary('Component', 'ModularAuth.ModularAuthenticators');
 			$this->fail('Unexpected objects Controller, Auth was found %s');
 		} catch (Exception $e) {
 			$this->assertIsA($e, 'ModularAuth_UnregisteredObjectException');
@@ -17,8 +17,8 @@ class ModularAuthUtilityTest extends ModularAuthTestCase {
 
 		ModularAuthUtility::registerObject('Auth', $this->Auth);
 		ModularAuthUtility::registerObject('Controller', $this->Controller);
-		$Authenticators = ModularAuthUtility::loadLibrary('Lib', 'ModularAuth.ModularAuthenticators');
-		$this->assertIsA($Authenticators, 'ModularAuthenticators');
+		$Authenticators = ModularAuthUtility::loadLibrary('Component', 'ModularAuth.ModularAuthenticators');
+		$this->assertIsA($Authenticators, 'ModularAuthenticatorsComponent');
 		$this->assertIsA($Authenticators->Auth, 'AuthComponent');
 		$this->assertIsA($Authenticators->Controller, 'Controller');
 

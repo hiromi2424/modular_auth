@@ -4,9 +4,17 @@ App::import('Lib', 'ModularAuth.ModularAuthTestCase', false, array(App::pluginPa
 App::import('Component', 'ModularAuth.MockInterruptModularAuthenticator', false, array(App::pluginPath('ModularAuth') . 'tests' . DS . 'lib'));
 
 class BaseModularAuthComponentTestCase extends ModularAuthTestCase {
+
 	function startTest($method = null) {
-		$this->Component = new MockBaseModularAuthComponent;
+
 		parent::startTest($method);
+
+		$this->_restructComponent();
+
+	}
+
+	protected function _restructComponent($settings = array()) {
+		$this->Component = $this->getMock('BaseModularAuthComponent', null, array($this->Collection, $settings));
 	}
 
 	function testTurnCallbackOnOrOff() {
@@ -25,19 +33,18 @@ class BaseModularAuthComponentTestCase extends ModularAuthTestCase {
 	}
 
 	function testSetup() {
-		$this->Component->initialize($this->Controller);
+
+		$this->_restructComponent();
 		$this->assertIsA($this->Component->Controller, 'Controller');
-		$this->assertIsA($this->Component->Authenticators, 'ModularAuthenticators');
+		$this->assertIsA($this->Component->Authenticators, 'ModularAuthenticatorsComponent');
 		$this->assertIsA($this->Component->Authenticators->Controller, 'Controller');
 		$this->assertIsA($this->Component->Authenticators->Auth, 'AuthComponent');
 		$this->assertTrue(ModularAuthUtility::isRegistered('Auth', 'Controller', 'Authenticators'));
 
-		$this->startTest();
-		$this->Component->initialize($this->Controller, array('collector' => 'MockModularAuthenticators'));
-		$this->assertIsA($this->Component->Authenticators, 'MockModularAuthenticators');
+		$this->_restructComponent(array('collector' => 'MockModularAuthenticators'));
+		$this->assertIsA($this->Component->Authenticators, 'MockModularAuthenticatorsComponent');
 
-		$this->startTest();
-		$this->Component->initialize($this->Controller, array('authenticators' => 'MockModularAuthenticator'));
+		$this->_restructComponent(array('authenticators' => 'MockModularAuthenticator'));
 		$this->assertIsA($this->Component->MockModularAuthenticator, 'MockModularAuthenticatorComponent');
 	}
 
@@ -51,7 +58,8 @@ class BaseModularAuthComponentTestCase extends ModularAuthTestCase {
 	}
 
 	function testInterruption() {
-		$this->Component->initialize($this->Controller, array('authenticators' => 'ModularAuth.MockInterruptModularAuthenticator'));
+
+		$this->_restructComponent(array('authenticators' => 'ModularAuth.MockInterruptModularAuthenticator'));
 		foreach (array_diff(get_class_methods('AuthComponent'), get_class_methods('Object')) as $method) {
 			if ($method === 'initialize' || strpos($method, '_') === 0) {
 				continue;
@@ -64,5 +72,6 @@ class BaseModularAuthComponentTestCase extends ModularAuthTestCase {
 			}
 			$this->assertEqual(call_user_func_array(array($this->Component, $method), $args), "interrupt $method");
 		}
+
 	}
 }

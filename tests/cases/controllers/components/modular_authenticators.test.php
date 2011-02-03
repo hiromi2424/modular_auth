@@ -2,17 +2,21 @@
 
 App::import('Lib', 'ModularAuth.ModularAuthTestCase', false, array(App::pluginPath('ModularAuth') . 'tests' . DS . 'lib'));
 
-class ModularAuthenticatorsTestCase extends ModularAuthTestCase {
+class ModularAuthenticatorsComponentTestCase extends ModularAuthTestCase {
 
 	function startTest($method) {
+
+		parent::startTest($method);
+
 		ModularAuthUtility::registerObject('Auth', $this->Auth);
 		ModularAuthUtility::registerObject('Controller', $this->Controller);
-		$this->Authenticators = new ModularAuthenticators;
+		$this->Authenticators = ModularAuthUtility::loadLibrary('Component', 'ModularAuthenticators');
 		$this->Auth->Authenticators = $this->Authenticators;
-		parent::startTest($method);
+
 	}
 
 	public function testObjectMethod() {
+
 		$this->Authenticators->append('FirstMockModularAuthenticator');
 		$this->assertTrue($this->Authenticators->exists('FirstMockModularAuthenticator'));
 		$this->assertIsA($this->Authenticators->get('FirstMockModularAuthenticator'), 'FirstMockModularAuthenticatorComponent');
@@ -27,7 +31,7 @@ class ModularAuthenticatorsTestCase extends ModularAuthTestCase {
 		$this->assertTrue($this->Authenticators->exists('FirstMockModularAuthenticator', 'SecondMockModularAuthenticatorComponent'));
 
 		ModularAuthUtility::deleteObject('FirstMockModularAuthenticator', 'SecondMockModularAuthenticatorComponent');
-		$this->Authenticators->append('Hoge', new FirstMockModularAuthenticatorComponent);
+		$this->Authenticators->append('Hoge', new FirstMockModularAuthenticatorComponent($this->Collection, array()));
 		$this->assertTrue($this->Authenticators->exists('Hoge'));
 
 		try {
@@ -50,22 +54,27 @@ class ModularAuthenticatorsTestCase extends ModularAuthTestCase {
 	}
 
 	public function testMagick() {
+
 		$this->Authenticators->FirstMockModularAuthenticator = null;
 		$this->assertTrue(isset($this->Authenticators->FirstMockModularAuthenticator));
 		$this->assertIsA($this->Authenticators->FirstMockModularAuthenticator, 'FirstMockModularAuthenticatorComponent');
 		unset($this->Authenticators->FirstMockModularAuthenticator);
 		$this->assertFalse(isset($this->Authenticators->FirstMockModularAuthenticator));
+
 	}
 
 	public function testArrayAccess() {
+
 		$this->Authenticators['FirstMockModularAuthenticator'] = null;
 		$this->assertTrue(isset($this->Authenticators['FirstMockModularAuthenticator']));
 		$this->assertIsA($this->Authenticators['FirstMockModularAuthenticator'], 'FirstMockModularAuthenticatorComponent');
 		unset($this->Authenticators['FirstMockModularAuthenticator']);
 		$this->assertFalse(isset($this->Authenticators['FirstMockModularAuthenticator']));
+
 	}
 
 	public function testTriggerCallback() {
+
 		$this->Authenticators->append('SecondMockModularAuthenticator');
 
 		$this->assertNull($this->Authenticators->triggerCallback('before', 'logout', array(), false));
@@ -109,10 +118,13 @@ class ModularAuthenticatorsTestCase extends ModularAuthTestCase {
 			$this->assertIsA($e, 'ModularAuth_IllegalArgumentException');
 			$this->assertEqual($e->getMessage(), '$return = undefined return type');
 		}
+
 	}
 
 	function testInterruption() {
+
 		$this->Authenticators->append('MockModularAuthenticator');
 		$this->assertEqual($this->Authenticators->triggerCallback('before', 'login', array()), 'interrupted');
+
 	}
 }

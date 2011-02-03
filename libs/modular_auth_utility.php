@@ -54,7 +54,7 @@ class ModularAuthUtility {
 		return self::$__stateTable[$state];
 	}
 
-	public static function loadLibrary($type, $name) {
+	public static function loadLibrary($type, $name, $settings = array()) {
 		$name = self::denormalize($name);
 		list($plugin, $objectName) = pluginSplit($name);
 		if (in_array(strtolower($type), array('component', 'helper'))) {
@@ -64,18 +64,22 @@ class ModularAuthUtility {
 		if (!App::import($type, $name) && !class_exists($objectName)) {
 			throw new ModularAuth_ObjectNotFoundException($objectName);
 		}
-		$object = new $objectName;
+
+		if (strtolower($type) === 'component') {
+			$object = self::getObject('Controller')->Components->load($name, $settings);
+		} else {
+			$object = new $objectName;
+		}
 
 		if ($object instanceof ModularAuthBaseObject) {
 			self::bindObject($object, 'Controller', 'Auth');
-			$object->init();
 		}
 
 		return $object;
 	}
 
-	public static function loadAuthenticator($name, $type = 'Component') {
-		$Authenticator = self::loadLibrary($type, $name);
+	public static function loadAuthenticator($name, $settings = array()) {
+		$Authenticator = self::loadLibrary('Component', $name, $settings);
 		self::registerObject($name, $Authenticator);
 		return $Authenticator;
 	}

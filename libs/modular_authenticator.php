@@ -11,7 +11,8 @@ abstract class ModularAuthenticator extends ModularAuthBaseObject {
 	protected $_resultOverrided = false;
 	protected $_interrupted = false;
 
-	public function init() {
+	public function init($settings = array()) {
+
 		$authMethods = get_class_methods('AuthComponent');
 		$objectMethods = get_class_methods('Object');
 		foreach (array_diff($authMethods, $objectMethods) as $method) {
@@ -19,6 +20,7 @@ abstract class ModularAuthenticator extends ModularAuthBaseObject {
 				$this->_callbackMethods[] = strtolower($method);
 			}
 		}
+
 	}
 
 	public function overrideResult($result) {
@@ -76,7 +78,7 @@ abstract class ModularAuthenticator extends ModularAuthBaseObject {
 	// alias for $this->alias->callParent()
 	public function callParent($method) {
 		$args = func_get_args();
-		/* $methods =  */ array_shift($args);
+		/* $method = */ array_shift($args);
 		return $this->Auth->callParent($method, $args);
 	}
 

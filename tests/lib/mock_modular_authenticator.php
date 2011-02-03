@@ -48,3 +48,7 @@ class SecondMockModularAuthenticatorComponent extends ModularAuthenticator {
 		$this->overrideResult('piyo');
 	}
 }
+
+class MockModularAuthenticatorsComponent extends ModularAuthenticatorsComponent {
+	
+}

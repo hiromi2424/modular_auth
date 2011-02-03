@@ -4,15 +4,16 @@ App::import('Lib', 'ModularAuth.ModularAuthTestCase', false, array(App::pluginPa
 
 class ModularAuthenticatorTestCase extends ModularAuthTestCase {
 
-	public function startTest() {
+	public function startTest($method) {
+		parent::startTest($method);
+
 		ModularAuthUtility::registerObject('Controller', $this->Controller);
 		ModularAuthUtility::registerObject('Auth', $this->Auth);
 		$this->Authenticator = ModularAuthUtility::loadAuthenticator('MockModularAuthenticator');
 	}
 
 	function testInit() {
-		$this->Authenticator = new MockModularAuthenticatorComponent;
-		$this->Authenticator->init();
+
 		$expectedMethods = array(
 			'initialize', 'startup', 'isAuthorized', 'allow', 'deny',
 			'mapActions', 'login', 'logout', 'user', 'redirect',
@@ -22,6 +23,7 @@ class ModularAuthenticatorTestCase extends ModularAuthTestCase {
 		foreach ($expectedMethods as $method) {
 			$this->assertTrue($this->Authenticator->methodEnabled($method), $method);
 		}
+
 	}
 
 	public function testDispatchMethod() {
@@ -58,24 +60,28 @@ class ModularAuthenticatorTestCase extends ModularAuthTestCase {
 	}
 
 	public function testCallParent() {
-		$this->Auth->setReturnValue('callParent', false, array('login'));
-		$this->Auth->setReturnValue('callParent', true, array('login', array('success')));
+
+		$this->Auth->expects($this->any())->method('callParent')->will($this->onConsecutiveCalls(false, true));
+
 		$this->assertFalse($this->Authenticator->callParent('login'));
-		$this->assertTrue($this->Authenticator->callParent('login', 'success'));
+		$this->assertTrue($this->Authenticator->callParent('logout', 'success'));
+
 	}
 
 	public function testMagickCallParent() {
-		$this->Auth->setReturnValue('callParent', false, array('login'));
-		$this->Auth->setReturnValue('callParent', true, array('login', array('success')));
+
+		$this->Auth->expects($this->any())->method('callParent')->will($this->onConsecutiveCalls(false, true));
+
 		$this->assertFalse($this->Authenticator->parentLogin());
 		$this->assertTrue($this->Authenticator->parentLogin('success'));
 
 		$this->expectException('ModularAuth_IllegalAuthComponentMethodException');
 		$this->Authenticator->parentUndefinedMethod();
+
 	}
 
 	function testInterrupt() {
-		$this->Auth->Authenticators = ModularAuthUtility::loadLibrary('Lib', 'ModularAuthenticators');
+		$this->Auth->Authenticators = ModularAuthUtility::loadLibrary('Component', 'ModularAuthenticators');
 		$this->assertIdentical($this->Authenticator->dispatchMethod('login', 'before', array(), 'boolean'), 'interrupted');
 	}
 }

@@ -90,4 +90,19 @@ class MockInterruptModularAuthenticatorComponent extends ModularAuthenticator {
 		return 'interrupt shutdown';
 	}
 
+	 public function beforeloggedIn() {
+		$this->interrupt();
+		return 'interrupt loggedIn';
+	}
+
+	 public function beforebeforeRender() {
+		$this->interrupt();
+		return 'interrupt beforeRender';
+	}
+
+	 public function beforebeforeRedirect() {
+		$this->interrupt();
+		return 'interrupt beforeRedirect';
+	}
+
 }

@@ -11,31 +11,47 @@ abstract class BaseModularAuthComponent extends AuthComponent {
 	public $Controller;
 
 	public $collector = 'ModularAuth.ModularAuthenticators';
+	public $authenticators = array();
+
+	public function __construct($collection, $settings = array()) {
+
+		$settings = $this->dispatchMethod('_setup', array($collection->getController(), $settings));
+		parent::__construct($collection, $settings);
+
+	}
 
 	protected function _setup($Controller, $settings) {
+
 		ModularAuthUtility::registerObject(compact('Controller') + array('Auth' => $this));
 
 		if (isset($settings['collector'])) {
 			$this->collector = $settings['collector'];
 			unset($settings['collector']);
 		}
-		$Authenticators = ModularAuthUtility::loadLibrary('Lib', $this->collector);
+		$Authenticators = ModularAuthUtility::loadLibrary('Component', $this->collector, $settings);
 		ModularAuthUtility::registerObject(compact('Authenticators'));
-		$Authenticators->configure($settings);
 
 		if (isset($settings['authenticators'])) {
-			$Authenticators->append($settings['authenticators']);
+			$this->authenticators = Set::merge($this->authenticators, $settings['authenticators']);
 			unset($settings['authenticators']);
 		}
+
+		if (!empty($this->authenticators)) {
+			$Authenticators->append($this->authenticators);
+		}
+
 		ModularAuthUtility::bindObject($this, 'Controller', 'Authenticators');
 		return $settings;
+
 	}
 
 	public function callParent($method, $params = array()) {
+
 		if (!method_exists('AuthComponent', $method)) {
 			throw new ModularAuth_IllegalAuthComponentMethodException($method);
 		}
 		return call_user_func_array(array('parent', $method), $params);
+
 	}
 
 	public function disableCallBack($callback = true) {
@@ -55,27 +71,14 @@ abstract class BaseModularAuthComponent extends AuthComponent {
 		return $result;
 	}
 
-	public function initialize($Controller, $settings = array()) {
-		$params = array($Controller, $settings);
-		$settings = $this->dispatchMethod('_setup', $params);
-
-		$result = $this->Authenticators->triggerCallback('before', 'initialize', $params);
-		if (!$this->Authenticators->interrupted) {
-			// workaround warning error with 'expected argument 1 as a reference'
-			$result = parent::initialize($Controller, $settings);
-		}
-		$result = $this->Authenticators->triggerCallback('after', 'initialize', array($result), 'enchain');
-		return $result;
+	public function initialize($Controller) {
+		$args = func_get_args();
+		return $this->_dispatch(__FUNCTION__, $args);
 	}
 
 	public function startup($Controller) {
-		$result = $this->Authenticators->triggerCallback('before', 'startup', array($Controller));
-		if (!$this->Authenticators->interrupted) {
-			// workaround warning error with 'expected argument 1 as a reference'
-			$result = parent::startup($Controller);
-		}
-		$result = $this->Authenticators->triggerCallback('after', 'startup', array($result), 'enchain');
-		return $result;
+		$args = func_get_args();
+		return $this->_dispatch(__FUNCTION__, $args);
 	}
 
 	 public function isAuthorized($type = null, $object = null, $user = null) {
@@ -149,13 +152,23 @@ abstract class BaseModularAuthComponent extends AuthComponent {
 	}
 
 	 public function shutdown($Controller) {
-		$result = $this->Authenticators->triggerCallback('before', 'shutdown', array($Controller));
-		if (!$this->Authenticators->interrupted) {
-			// workaround warning error with 'expected argument 1 as a reference'
-			$result = parent::shutdown($Controller);
-		}
-		$result = $this->Authenticators->triggerCallback('after', 'shutdown', array($result), 'enchain');
-		return $result;
+		$args = func_get_args();
+		return $this->_dispatch(__FUNCTION__, $args);
+	}
+
+	public function loggedIn($logged = null) {
+		$args = func_get_args();
+		return $this->_dispatch(__FUNCTION__, $args);
+	}
+
+	public function beforeRender($Controller) {
+		$args = func_get_args();
+		return $this->_dispatch(__FUNCTION__, $args);
+	}
+
+	public function beforeRedirect($Controller) {
+		$args = func_get_args();
+		return $this->_dispatch(__FUNCTION__, $args);
 	}
 
 }

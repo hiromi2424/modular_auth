@@ -5,7 +5,7 @@ App::import('Lib', array(
 	'ModularAuth.ModularAuthenticator',
 ), false);
 
-class ModularAuthenticators extends ModularAuthBaseObject implements ArrayAccess {
+class ModularAuthenticatorsComponent extends ModularAuthBaseObject implements ArrayAccess {
 	public $interrupted = false;
 
 	protected $_results;
@@ -116,25 +116,32 @@ class ModularAuthenticators extends ModularAuthBaseObject implements ArrayAccess
 	}
 
 	public function __set($name, $value) {
+
 		try {
 			if (empty($name)) {
 				throw new ModularAuth_IllegalAuthenticatorNameException(var_export($name, true));
 			} elseif (is_object($value)) {
+
 				if (!($value instanceof ModularAuthenticator)) {
 					throw new ModularAuth_IllegalAuthenticatorObjectException(get_class($value));
 				}
+
 				ModularAuthUtility::registerObject($name, $value);
 				return $this->__get($name);
+
 			} elseif (!$this->__isset($name)) {
-				$Authenticator = ModularAuthUtility::loadAuthenticator($name);
+				$Authenticator = ModularAuthUtility::loadAuthenticator($name, $value);
 			} else {
 				$Authenticator = $this->__get($name);
+				$Authenticator->configure($value);
 			}
-			$Authenticator->configure($value);
+
 			return $Authenticator;
+
 		} catch (ModularAuth_ObjectNotFoundException $e) {
 			throw new ModularAuth_AuthenticatorNotFoundException($e->getMessage());
 		}
+
 	}
 
 	public function __isset($name) {

@@ -4,18 +4,26 @@ App::import('Lib', array(
 	'ModularAuth.ModularAuthUtility',
 ), false);
 
-abstract class ModularAuthBaseObject extends Object {
+abstract class ModularAuthBaseObject extends Component {
+
 	public $Controller;
 	public $Auth;
 
 	protected $_disabled = false;
 	protected $_disabledMethods = array();
 
-	public function init() {
-		
+	public function __construct(ComponentCollection $collection, $settings = array()) {
+
+		parent::__construct($collection, $settings);
+		$this->init($settings);
+		$this->configure($settings);
+
 	}
 
-	public function configure($settings) {
+	public function init($settings = array()) {
+	}
+
+	public function configure($settings = array()) {
 		extract((array)$settings);
 		if (isset($disable)) {
 			$this->disable($disable);

@@ -4,27 +4,24 @@ App::import('Lib', array(
 	'ModularAuth.ModularAuthException',
 	'ModularAuth.ModularAuthUtility',
 	'ModularAuth.ModularAuthBaseObject',
-	'ModularAuth.ModularAuthenticators',
 	'ModularAuth.ModularAuthenticator',
 ), false);
-App::import('Component', 'ModularAuth.MockModularAuthenticator', false, array(App::pluginPath('ModularAuth') . 'tests' . DS . 'lib'));
 
 App::import('Cotroller', 'Controller', false);
 App::import('Component', 'Auth', false);
 App::import('Component', 'ModularAuth.ModularAuth', false);
+App::import('Component', 'ModularAuth.ModularAuthenticators', false);
 
-Mock::generate('Controller');
-Mock::generate('ModularAuthComponent');
-Mock::generatePartial('ModularAuthBaseObject', 'MockModularAuthBaseObject', array('log'));
-Mock::generatePartial('ModularAuthenticators', 'MockModularAuthenticators', array('log'));
-Mock::generatePartial('BaseModularAuthComponent', 'MockBaseModularAuthComponent', array('log'));
+App::import('Component', 'ModularAuth.MockModularAuthenticator', false, array(App::pluginPath('ModularAuth') . 'tests' . DS . 'lib'));
 
 abstract class ModularAuthTestCase extends CakeTestCase {
 
-	public function startCase() {
-		$this->Auth = new MockModularAuthComponent;
-		$this->Controller = new MockController;
-		parent::startCase();
+	public function startTest($method) {
+		$this->Controller = $this->getMock('Controller');
+		$this->Collection = $this->Controller->Components;
+		$this->Collection->init($this->Controller);
+		$this->Auth = $this->getMock('ModularAuthComponent', array(), array($this->Collection, array()));
+		parent::startTest($method);
 	}
 
 	public function endTest($method) {
