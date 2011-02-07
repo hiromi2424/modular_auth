@@ -24,9 +24,11 @@ class ModularAuthUtilityTest extends ModularAuthTestCase {
 
 		$this->expectException('ModularAuth_ObjectNotFoundException');
 		ModularAuthUtility::loadLibrary('Core', 'WrongFile');
+
 	}
 
 	public function testLoadAuthenticator() {
+
 		ModularAuthUtility::registerObject('Auth', $this->Auth);
 		ModularAuthUtility::registerObject('Controller', $this->Controller);
 		$Authenticator = ModularAuthUtility::loadAuthenticator('MockModularAuthenticator');
@@ -40,9 +42,11 @@ class ModularAuthUtilityTest extends ModularAuthTestCase {
 		ModularAuthUtility::deleteObject('MockModularAuthenticator');
 		$this->assertEqual(ModularAuthUtility::$authenticators, array());
 		$this->assertFalse(isset($Authenticator->Auth->MockModularAuthenticator));
+
 	}
 
 	public function testNormalizeMethods() {
+
 		$this->assertEqual(ModularAuthUtility::normalize('hoge.piyo_fuga'), 'Hoge_PiyoFuga');
 		$this->assertEqual(ModularAuthUtility::normalize('Hoge.PiyoFuga'), 'Hoge_PiyoFuga');
 		$this->assertEqual(ModularAuthUtility::normalize('Hoge_PiyoFuga'), 'Hoge_PiyoFuga');
@@ -55,6 +59,7 @@ class ModularAuthUtilityTest extends ModularAuthTestCase {
 	}
 
 	public function testChangeState() {
+
 		$property = false;
 		$this->assertTrue(ModularAuthUtility::disableState($property, true));
 		$this->assertIdentical($property, true);
@@ -153,9 +158,11 @@ class ModularAuthUtilityTest extends ModularAuthTestCase {
 		$property = true;
 		$this->assertTrue(ModularAuthUtility::enableState($property, 'after'));
 		$this->assertIdentical($property, 'before');
+
 	}
 
 	public function testCompareState() {
+
 		$this->assertIdentical(ModularAuthUtility::disabled(true, true), true);
 		$this->assertIdentical(ModularAuthUtility::disabled(true, 'before'), true);
 		$this->assertIdentical(ModularAuthUtility::disabled(true, 'after'), true);
@@ -188,9 +195,11 @@ class ModularAuthUtilityTest extends ModularAuthTestCase {
 		$this->assertIdentical(ModularAuthUtility::enabled(false, true), true);
 		$this->assertIdentical(ModularAuthUtility::enabled(false, 'before'), true);
 		$this->assertIdentical(ModularAuthUtility::enabled(false, 'after'), true);
+
 	}
 
 	public function testObjectMethods() {
+
 		$destination = new Object;
 
 
@@ -271,5 +280,7 @@ class ModularAuthUtilityTest extends ModularAuthTestCase {
 		} catch (Exception $e) {
 			$this->assertIsA($e, 'ModularAuth_UnregisteredObjectException');
 		}
+
 	}
+
 }

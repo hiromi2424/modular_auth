@@ -5,7 +5,7 @@ App::import('Component', 'ModularAuth.MockInterruptModularAuthenticator', false,
 
 class BaseModularAuthComponentTestCase extends ModularAuthTestCase {
 
-	function startTest($method = null) {
+	public function startTest($method = null) {
 
 		parent::startTest($method);
 
@@ -17,22 +17,27 @@ class BaseModularAuthComponentTestCase extends ModularAuthTestCase {
 		$this->Component = $this->getMock('BaseModularAuthComponent', null, array($this->Collection, $settings));
 	}
 
-	function testTurnCallbackOnOrOff() {
-		$this->Component->initialize($this->Controller);
+	public function testTurnCallbackOnOrOff() {
+
+		$this->_restructComponent();
+
 		$this->assertTrue($this->Component->Authenticators->enabled());
 		$this->assertTrue($this->Component->disableCallback());
 		$this->assertTrue($this->Component->Authenticators->disabled());
 		$this->assertTrue($this->Component->enableCallback());
 		$this->assertTrue($this->Component->Authenticators->enabled());
+
 	}
 
-	function testCallParent() {
+	public function testCallParent() {
+
 		$this->assertEqual($this->Component->callParent('password', array('hoge')), Security::hash('hoge', null, true));
 		$this->expectException('ModularAuth_IllegalAuthComponentMethodException');
 		$this->Component->callParent('undefined_auth_component_method', array('fuga'));
+
 	}
 
-	function testSetup() {
+	public function testSetup() {
 
 		$this->_restructComponent();
 		$this->assertIsA($this->Component->Controller, 'Controller');
@@ -46,26 +51,29 @@ class BaseModularAuthComponentTestCase extends ModularAuthTestCase {
 
 		$this->_restructComponent(array('authenticators' => 'MockModularAuthenticator'));
 		$this->assertIsA($this->Component->MockModularAuthenticator, 'MockModularAuthenticatorComponent');
+
 	}
 
-	function testDispatch() {
-		$this->Component->initialize($this->Controller, array('collector' => 'MockModularAuthenticators'));
+	public function testDispatch() {
+
+		$this->_restructComponent(array('collector' => 'MockModularAuthenticators'));
 		$this->assertIdentical($this->Component->password('hoge'), Security::hash('hoge', null, true));
 
 		$this->Controller->name = 'tests';
 		$this->assertTrue($this->Component->startup($this->Controller));
 		$this->assertNull($this->Component->shutdown($this->Controller));
+
 	}
 
-	function testInterruption() {
+	public function testInterruption() {
 
 		$this->_restructComponent(array('authenticators' => 'ModularAuth.MockInterruptModularAuthenticator'));
 		foreach (array_diff(get_class_methods('AuthComponent'), get_class_methods('Object')) as $method) {
-			if ($method === 'initialize' || strpos($method, '_') === 0) {
+			if ($method === 'redirect' || strpos($method, '_') === 0) {
 				continue;
 			}
 
-			if (in_array($method, array('startup', 'shutdown'))) {
+			if (in_array($method, array('initialize', 'startup', 'shutdown'))) {
 				$args = array($this->Controller);
 			} else {
 				$args = array('hoge', 'piyo');

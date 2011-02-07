@@ -5,6 +5,7 @@ App::import('Lib', array(
 ), false);
 
 class MockInterruptModularAuthenticatorComponent extends ModularAuthenticator {
+
 	 public function beforeinitialize() {
 		$this->interrupt();
 		return 'interrupt initialize';

@@ -24,10 +24,13 @@ abstract class ModularAuthBaseObject extends Component {
 	}
 
 	public function configure($settings = array()) {
+
 		extract((array)$settings);
+
 		if (isset($disable)) {
 			$this->disable($disable);
 		}
+
 		if (isset($disableMethods)) {
 			foreach (Set::normalize($disableMethods) as $method => $callback) {
 				$this->disableMethod($method, $callback);
@@ -37,11 +40,13 @@ abstract class ModularAuthBaseObject extends Component {
 		if (isset($enable)) {
 			$this->enable($enable);
 		}
+
 		if (isset($enableMethods)) {
 			foreach (Set::normalize($enableMethods) as $method => $callback) {
 				$this->enableMethod($method, $callback);
 			}
 		}
+
 	}
 
 	public function enable() {
@@ -77,18 +82,24 @@ abstract class ModularAuthBaseObject extends Component {
 	}
 
 	protected function _callStateMethod($call, $args) {
+
 		$callback = true;
 		$method = null;
+
 		switch (count($args)) {
+
 			case 0:
 				break;
+
 			case 1:
 				$callback = $args[0];
 				break;
+
 			case 2:
 				$method = $args[0];
 				$callback = $args[1];
 				break;
+
 			default:
 				throw new ModularAuth_IllegalArgumentsException;
 		}
@@ -104,10 +115,14 @@ abstract class ModularAuthBaseObject extends Component {
 		if (!isset($method)) {
 			return ModularAuthUtility::$call($this->_disabled, $callback);
 		} else {
+
 			if (!isset($this->_disabledMethods[$method])) {
 				$this->_disabledMethods[$method] = false;
 			}
+
 			return ModularAuthUtility::$call($this->_disabledMethods[$method], $callback);
+
 		}
 	}
+
 }

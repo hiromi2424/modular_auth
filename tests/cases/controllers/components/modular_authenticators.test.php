@@ -4,7 +4,7 @@ App::import('Lib', 'ModularAuth.ModularAuthTestCase', false, array(App::pluginPa
 
 class ModularAuthenticatorsComponentTestCase extends ModularAuthTestCase {
 
-	function startTest($method) {
+	public function startTest($method) {
 
 		parent::startTest($method);
 
@@ -51,6 +51,7 @@ class ModularAuthenticatorsComponentTestCase extends ModularAuthTestCase {
 
 		$this->expectException('ModularAuth_IllegalAuthenticatorObjectException');
 		$this->Authenticators->append('Hoge', new Object);
+
 	}
 
 	public function testMagick() {
@@ -121,10 +122,11 @@ class ModularAuthenticatorsComponentTestCase extends ModularAuthTestCase {
 
 	}
 
-	function testInterruption() {
+	public function testInterruption() {
 
 		$this->Authenticators->append('MockModularAuthenticator');
 		$this->assertEqual($this->Authenticators->triggerCallback('before', 'login', array()), 'interrupted');
 
 	}
+
 }

@@ -17,15 +17,20 @@ App::import('Component', 'ModularAuth.MockModularAuthenticator', false, array(Ap
 abstract class ModularAuthTestCase extends CakeTestCase {
 
 	public function startTest($method) {
+
 		$this->Controller = $this->getMock('Controller');
 		$this->Collection = $this->Controller->Components;
 		$this->Collection->init($this->Controller);
 		$this->Auth = $this->getMock('ModularAuthComponent', array(), array($this->Collection, array()));
 		parent::startTest($method);
+
 	}
 
 	public function endTest($method) {
+
 		ModularAuthUtility::flushObjects();
 		parent::endTest($method);
+
 	}
+
 }

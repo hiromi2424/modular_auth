@@ -63,12 +63,17 @@ abstract class BaseModularAuthComponent extends AuthComponent {
 	}
 
 	protected function _dispatch($method, $params, $beforeReturn = 'boolean', $afterRetrun = 'enchain') {
+
 		$result = $this->Authenticators->triggerCallback('before', $method, $params, $beforeReturn);
+
 		if (!$this->Authenticators->interrupted) {
 			$result = $this->callParent($method, $params);
 		}
+
 		$result = $this->Authenticators->triggerCallback('after', $method, array($result), $afterRetrun);
+
 		return $result;
+
 	}
 
 	public function initialize($Controller) {
@@ -112,11 +117,6 @@ abstract class BaseModularAuthComponent extends AuthComponent {
 	}
 
 	 public function user($key = null) {
-		$args = func_get_args();
-		return $this->_dispatch(__FUNCTION__, $args);
-	}
-
-	 public function redirect($url = null) {
 		$args = func_get_args();
 		return $this->_dispatch(__FUNCTION__, $args);
 	}

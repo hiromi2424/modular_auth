@@ -5,48 +5,63 @@ App::import('Lib', array(
 ), false);
 
 class MockModularAuthenticatorComponent extends ModularAuthenticator {
-	function beforeValidate() {
+
+	public function beforeValidate() {
 		return true;
 	}
 
-	function afterValidate() {
+	public function afterValidate() {
 		$this->overrideResult('hoge');
 	}
 
-	function beforePassword() {
+	public function beforePassword() {
 		return false;
 	}
 
-	function afterPassword() {
+	public function afterPassword() {
 		
 	}
 
-	function beforeShutdown() {
+	public function beforeShutdown() {
 	}
 
-	function beforeLogin() {
+	public function beforeLogin() {
+
 		$this->interrupt();
 		return 'interrupted';
+
 	}
+
+	public function beforeInitialize() {
+
+		$args = func_get_args();
+		return $args;
+
+	}
+
 }
 
 class FirstMockModularAuthenticatorComponent extends ModularAuthenticator {
-	function beforeLogout() {
+
+	public function beforeLogout() {
 		return false;
 	}
-	function afterLogout() {
+	public function afterLogout() {
 		$this->overrideResult('hoge');
 	}
+
 }
 
 class SecondMockModularAuthenticatorComponent extends ModularAuthenticator {
-	function beforeLogout() {
+
+	public function beforeLogout() {
 		return true;
 	}
 
-	function afterLogout() {
+	public function afterLogout() {
 		$this->overrideResult('piyo');
 	}
+
 }
 
 class MockModularAuthenticatorsComponent extends ModularAuthenticatorsComponent {

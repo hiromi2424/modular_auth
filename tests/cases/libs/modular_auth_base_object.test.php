@@ -4,16 +4,21 @@ App::import('Lib', 'ModularAuth.ModularAuthTestCase', false, array(App::pluginPa
 
 class ModularAuthBaseObjectTestCase extends ModularAuthTestCase {
 
-	function startTest($method) {
+	public function startTest($method) {
+
 		parent::startTest($method);
 		$this->TestObject = $this->getMock('ModularAuthBaseObject', null, array($this->Collection, array()));
+
 	}
 
 	public function testInit() {
+
 		$this->assertNull($this->TestObject->init());
+
 	}
 
 	public function testStateMethods() {
+
 		$this->assertTrue($this->TestObject->enabled(), 'enabled at first');
 
 		$this->assertTrue($this->TestObject->disable(), 'disable success');
@@ -67,9 +72,11 @@ class ModularAuthBaseObjectTestCase extends ModularAuthTestCase {
 
 		$this->expectException('ModularAuth_IllegalArgumentsException', null, 'Exception was thrown when too many arguments specified');
 		$this->TestObject->enable(1, 2, 3);
+
 	}
 
-	function testConfigure() {
+	public function testConfigure() {
+
 		$this->TestObject->configure(null);
 		$this->assertTrue($this->TestObject->enabled(), 'null can be handled');
 
@@ -90,4 +97,5 @@ class ModularAuthBaseObjectTestCase extends ModularAuthTestCase {
 		$this->assertTrue($this->TestObject->methodEnabled('login'), 'specifying enable login method success');
 
 	}
+
 }

@@ -6,6 +6,7 @@ App::import('Lib', array(
 ), false);
 
 class ModularAuthUtility {
+
 	private static $__stateTable = array(
 		false => array(),
 		true => array('after', 'before'),
@@ -14,6 +15,7 @@ class ModularAuthUtility {
 	);
 
 	public static $authenticators = array();
+
 	protected static $_registeredObjects = array();
 
 	public static function enableState(&$disabled, $modify) {
@@ -33,28 +35,39 @@ class ModularAuthUtility {
 	}
 
 	protected static function _changeState($off, &$disabled, $modify) {
+
 		$disabledState = self::__state($disabled);
 		$modifyState = self::__state($modify);
 
 		$state = $off ? array_values(array_unique(array_merge($disabledState, $modifyState))) : array_diff($disabledState, $modifyState);
 		$modify = self::__state($state);
+
 		if ($disabled === $modify) {
 			return false;
 		}
+
 		$disabled = $modify;
+
 		return true;
+
 	}
 
 	private static function __state($state) {
+
 		if (is_array($state)) {
+
 			sort($state);
 			$result = array_search($state, self::$__stateTable);
 			return is_numeric($result) ? !!$result : $result;
+
 		}
+
 		return self::$__stateTable[$state];
+
 	}
 
 	public static function loadLibrary($type, $name, $settings = array()) {
+
 		$name = self::denormalize($name);
 		list($plugin, $objectName) = pluginSplit($name);
 		if (in_array(strtolower($type), array('component', 'helper'))) {
@@ -76,27 +89,37 @@ class ModularAuthUtility {
 		}
 
 		return $object;
+
 	}
 
 	public static function loadAuthenticator($name, $settings = array()) {
+
 		$Authenticator = self::loadLibrary('Component', $name, $settings);
 		self::registerObject($name, $Authenticator);
+
 		return $Authenticator;
+
 	}
 
 	public static function normalize($name) {
+
 		$name = self::denormalize($name);
 		list($plugin, $name) = pluginSplit($name, true);
+
 		return str_replace('.', '_', Inflector::camelize($plugin) . Inflector::camelize($name));
+
 	}
 
 	public static function denormalize($name) {
+
 		list($plugin, $name) = pluginSplit($name);
 		if ($plugin) {
 			$plugin = Inflector::camelize($plugin) . '.';
 			$name = $plugin . Inflector::camelize($name);
 		}
+
 		return Inflector::camelize(str_replace('_', '.', $name));
+
 	}
 
 	public static function registerObject($name, $object = null) {
@@ -124,66 +147,94 @@ class ModularAuthUtility {
 	}
 
 	public static function deleteObject($name) {
+
 		if (is_array($name)) {
+
 			foreach ($name as $n) {
 				self::deleteObject($n);
 			}
+
 			return;
+
 		}
 
 		$name = self::normalize($name);
+
 		if (!isset(self::$_registeredObjects[$name])) {
 			throw new ModularAuth_UnregisteredObjectException($name);
 		}
+
 		if (false !== ($index = array_search($name, self::$authenticators))) {
 			self::unbindObject('Auth', $name);
 			unset(self::$authenticators[$index]);
 		}
+
 		unset(self::$_registeredObjects[$name]);
+
 	}
 
 	public static function flushObjects() {
+
 		if (empty(self::$_registeredObjects)) {
 			return false;
 		}
+
 		self::deleteObject(self::$authenticators);
 		self::deleteObject(array_keys(self::$_registeredObjects));
+
 		return true;
+
 	}
 
 	public static function bindObject($destination, $names) {
+
 		list($destination, $names) = self::__normalizeArguments(func_get_args());
 
 		foreach ((array)$names as $name) {
+
 			$name = self::normalize($name);
+
 			if (!isset(self::$_registeredObjects[$name])) {
 				throw new ModularAuth_UnregisteredObjectException($name);
 			}
+
 			$destination->$name = self::$_registeredObjects[$name];
+
 		}
+
 	}
 
 	public static function unbindObject($destination, $names) {
+
 		list($destination, $names) = self::__normalizeArguments(func_get_args());
 
 		foreach ((array)$names as $name) {
+
 			$name = self::normalize($name);
+
 			if (!isset(self::$_registeredObjects[$name])) {
 				throw new ModularAuth_UnregisteredObjectException($name);
 			}
+
 			unset($destination->$name);
+
 		}
+
 	}
 
 	public static function isRegistered() {
+
 		$names = Set::flatten(func_get_args());
 
 		foreach ((array)$names as $name) {
+
 			if (is_string($name)) {
+
 				$name = self::normalize($name);
 				if (!isset(self::$_registeredObjects[$name])) {
 					return false;
 				}
+
 			} elseif(is_object($name)) {
 				if (!in_array($name, self::$_registeredObjects)) {
 					return false;
@@ -191,16 +242,23 @@ class ModularAuthUtility {
 			} else {
 				return null;
 			}
+
 		}
+
 		return true;
+
 	}
 
 	private static function __normalizeArguments($args) {
+
 		$destination = array_shift($args);
+
 		if (!is_object($destination)) {
 			$destination = self::getObject($destination);
 		}
+
 		return array($destination, Set::flatten($args));
+
 	}
 
 }

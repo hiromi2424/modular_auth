@@ -6,6 +6,7 @@ App::import('Lib', array(
 ), false);
 
 class ModularAuthenticatorsComponent extends ModularAuthBaseObject implements ArrayAccess {
+
 	public $interrupted = false;
 
 	protected $_results;
@@ -19,46 +20,61 @@ class ModularAuthenticatorsComponent extends ModularAuthBaseObject implements Ar
 	}
 
 	public function triggerCallback($callback, $method, $params, $return = 'boolean') {
+
 		$this->interrupted = false;
 		$this->_params = $params;
 		$this->_return = $return;
 		$this->_results = array();
+
 		if (!empty(ModularAuthUtility::$authenticators) && $this->methodEnabled($method, $callback)) {
 			foreach (ModularAuthUtility::$authenticators as $this->_name) {
+
 				$result = $this->__get($this->_name)->dispatchMethod($method, $callback, $this->_params, $return);
 				if (!$this->_filterResult($result)) {
 					return $result;
 				}
+
 			}
 		}
 		return $this->_filterResults();
+
 	}
 
 	protected function _filterResult($result) {
+
 		if ($this->interrupted) {
 			return false;
 		}
 		switch ($this->_return) {
+
 			case false:
 				break;
+
 			case 'boolean':
 				if (!$result) {
 					return false;
 				}
 				break;
+
 			case 'enchain':
 				$this->_params = $result;
 				break;
+
 			case 'array':
 				$this->_results[$this->_name] = $result;
 				break;
+
 			default:
 				throw new ModularAuth_IllegalArgumentException("\$return = $this->_return");
+
 		}
+
 		return true;
+
 	}
 
 	protected function _filterResults() {
+
 		switch ($this->_return) {
 			case false:
 				return null;
@@ -71,20 +87,28 @@ class ModularAuthenticatorsComponent extends ModularAuthBaseObject implements Ar
 			default:
 				throw new ModularAuth_IllegalArgumentException("\$return = $this->_return");
 		}
+
 	}
 
 	public function get($name) {
+
 		return $this->__get($name);
+
 	}
 
 	public function append($name, $settings = array()) {
+
 		if (is_array($name)) {
+
 			foreach (Set::normalize($name) as $n => $settings) {
 				$this->__set($n, $settings);
 			}
+
 			return true;
+
 		}
 		return $this->__set($name, $settings);
+
 	}
 
 	public function exists($name) {
@@ -118,6 +142,7 @@ class ModularAuthenticatorsComponent extends ModularAuthBaseObject implements Ar
 	public function __set($name, $value) {
 
 		try {
+
 			if (empty($name)) {
 				throw new ModularAuth_IllegalAuthenticatorNameException(var_export($name, true));
 			} elseif (is_object($value)) {
@@ -151,4 +176,5 @@ class ModularAuthenticatorsComponent extends ModularAuthBaseObject implements Ar
 	public function __unset($name) {
 		return ModularAuthUtility::deleteObject($name);
 	}
+
 }
