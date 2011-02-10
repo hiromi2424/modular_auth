@@ -15,7 +15,7 @@ abstract class BaseModularAuthComponent extends AuthComponent {
 
 	public function __construct($collection, $settings = array()) {
 
-		$settings = $this->dispatchMethod('_setup', array($collection->getController(), $settings));
+		$settings = $this->_setup($collection->getController(), $settings);
 		parent::__construct($collection, $settings);
 
 	}
@@ -28,7 +28,7 @@ abstract class BaseModularAuthComponent extends AuthComponent {
 			$this->collector = $settings['collector'];
 			unset($settings['collector']);
 		}
-		$Authenticators = ModularAuthUtility::loadLibrary('Component', $this->collector, $settings);
+		$Authenticators = ModularAuthUtility::loadLibrary('Component', $this->collector, array_diff_key($settings, array('className' => true)));
 		ModularAuthUtility::registerObject(compact('Authenticators'));
 
 		if (isset($settings['authenticators'])) {

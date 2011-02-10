@@ -79,7 +79,8 @@ class ModularAuthenticatorsComponentTestCase extends ModularAuthTestCase {
 		$this->Authenticators->append('SecondMockModularAuthenticator');
 
 		$this->assertNull($this->Authenticators->triggerCallback('before', 'logout', array(), false));
-		$this->assertEqual($this->Authenticators->triggerCallback('before', 'logout', array(), 'array'), array('SecondMockModularAuthenticator' => true));
+		$result = $this->Authenticators->triggerCallback('before', 'logout', array(), 'array');
+		$this->assertIdentical($result['SecondMockModularAuthenticator'], true);
 		$this->assertTrue($this->Authenticators->triggerCallback('before', 'logout', array()));
 
 		$this->Authenticators->disable();
@@ -90,7 +91,9 @@ class ModularAuthenticatorsComponentTestCase extends ModularAuthTestCase {
 
 		$this->Authenticators->SecondMockModularAuthenticator->disable();
 		$this->assertTrue($this->Authenticators->triggerCallback('before', 'logout', array()));
-		$this->assertEqual($this->Authenticators->triggerCallback('before', 'logout', array(), 'array'), array('SecondMockModularAuthenticator' => true));
+		$result = $this->Authenticators->triggerCallback('before', 'logout', array(), 'array');
+		$this->assertIdentical($result['SecondMockModularAuthenticator'], true);
+
 		$this->Authenticators->SecondMockModularAuthenticator->enable();
 
 		$this->Authenticators->drop('SecondMockModularAuthenticator');

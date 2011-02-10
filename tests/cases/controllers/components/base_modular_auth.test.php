@@ -52,6 +52,9 @@ class BaseModularAuthComponentTestCase extends ModularAuthTestCase {
 		$this->_restructComponent(array('authenticators' => 'MockModularAuthenticator'));
 		$this->assertIsA($this->Component->MockModularAuthenticator, 'MockModularAuthenticatorComponent');
 
+		$this->_restructComponent(array('className' => 'ModularAuth'));
+		$this->assertIsA($this->Component->Authenticators, 'ModularAuthenticatorsComponent');
+
 	}
 
 	public function testDispatch() {
