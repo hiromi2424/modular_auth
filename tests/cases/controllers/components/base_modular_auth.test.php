@@ -19,8 +19,6 @@ class BaseModularAuthComponentTestCase extends ModularAuthTestCase {
 
 	public function testTurnCallbackOnOrOff() {
 
-		$this->_restructComponent();
-
 		$this->assertTrue($this->Component->Authenticators->enabled());
 		$this->assertTrue($this->Component->disableCallback());
 		$this->assertTrue($this->Component->Authenticators->disabled());
@@ -72,12 +70,14 @@ class BaseModularAuthComponentTestCase extends ModularAuthTestCase {
 
 		$this->_restructComponent(array('authenticators' => 'ModularAuth.MockInterruptModularAuthenticator'));
 		foreach (array_diff(get_class_methods('AuthComponent'), get_class_methods('Object')) as $method) {
-			if ($method === 'redirect' || strpos($method, '_') === 0) {
+			if (in_array($method, array('redirect', 'beforeRedirect', 'beforeRender')) || strpos($method, '_') === 0) {
 				continue;
 			}
 
 			if (in_array($method, array('initialize', 'startup', 'shutdown'))) {
 				$args = array($this->Controller);
+			} elseif ($method === 'identify') {
+				$args = array($this->Controller->request, new CakeResponse);
 			} else {
 				$args = array('hoge', 'piyo');
 			}

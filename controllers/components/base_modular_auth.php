@@ -13,7 +13,11 @@ abstract class BaseModularAuthComponent extends AuthComponent {
 	public $collector = 'ModularAuth.ModularAuthenticators';
 	public $authenticators = array();
 
+	protected static $_instance;
+
 	public function __construct($collection, $settings = array()) {
+
+		self::$_instance = $this;
 
 		$settings = $this->_setup($collection->getController(), $settings);
 		parent::__construct($collection, $settings);
@@ -86,72 +90,52 @@ abstract class BaseModularAuthComponent extends AuthComponent {
 		return $this->_dispatch(__FUNCTION__, $args);
 	}
 
-	 public function isAuthorized($type = null, $object = null, $user = null) {
+	public function isAuthorized($user = null, $request = null) {
 		$args = func_get_args();
 		return $this->_dispatch(__FUNCTION__, $args);
 	}
 
-	 public function allow() {
+	public function constructAuthorize() {
 		$args = func_get_args();
 		return $this->_dispatch(__FUNCTION__, $args);
 	}
 
-	 public function deny() {
+	public function allow() {
 		$args = func_get_args();
 		return $this->_dispatch(__FUNCTION__, $args);
 	}
 
-	 public function mapActions($map = array()) {
+	public function deny() {
 		$args = func_get_args();
 		return $this->_dispatch(__FUNCTION__, $args);
 	}
 
-	 public function login($data = null) {
+	public function mapActions($map = array()) {
 		$args = func_get_args();
 		return $this->_dispatch(__FUNCTION__, $args);
 	}
 
-	 public function logout() {
+	public function login($user = null) {
 		$args = func_get_args();
 		return $this->_dispatch(__FUNCTION__, $args);
 	}
 
-	 public function user($key = null) {
+	public function logout() {
 		$args = func_get_args();
 		return $this->_dispatch(__FUNCTION__, $args);
 	}
 
-	 public function validate($object, $user = null, $action = null) {
+	public function identify(CakeRequest $request, CakeResponse $response) {
 		$args = func_get_args();
 		return $this->_dispatch(__FUNCTION__, $args);
 	}
 
-	 public function action($action = ':plugin/:controller/:action') {
+	public function constructAuthenticate() {
 		$args = func_get_args();
 		return $this->_dispatch(__FUNCTION__, $args);
 	}
 
-	 public function getModel($name = null) {
-		$args = func_get_args();
-		return $this->_dispatch(__FUNCTION__, $args);
-	}
-
-	 public function identify($user = null, $conditions = null) {
-		$args = func_get_args();
-		return $this->_dispatch(__FUNCTION__, $args);
-	}
-
-	 public function hashPasswords($data) {
-		$args = func_get_args();
-		return $this->_dispatch(__FUNCTION__, $args);
-	}
-
-	 public function password($password) {
-		$args = func_get_args();
-		return $this->_dispatch(__FUNCTION__, $args);
-	}
-
-	 public function shutdown($Controller) {
+	public function shutdown($Controller) {
 		$args = func_get_args();
 		return $this->_dispatch(__FUNCTION__, $args);
 	}
@@ -161,14 +145,19 @@ abstract class BaseModularAuthComponent extends AuthComponent {
 		return $this->_dispatch(__FUNCTION__, $args);
 	}
 
-	public function beforeRender($Controller) {
+	public function flash($message) {
 		$args = func_get_args();
 		return $this->_dispatch(__FUNCTION__, $args);
 	}
 
-	public function beforeRedirect($Controller) {
+	public static function user($key = null) {
 		$args = func_get_args();
-		return $this->_dispatch(__FUNCTION__, $args);
+		return self::$_instance->_dispatch(__FUNCTION__, $args);
+	}
+
+	public static function password($password) {
+		$args = func_get_args();
+		return self::$_instance->_dispatch(__FUNCTION__, $args);
 	}
 
 }

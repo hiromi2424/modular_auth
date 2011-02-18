@@ -6,11 +6,11 @@ App::import('Lib', array(
 
 class MockModularAuthenticatorComponent extends ModularAuthenticator {
 
-	public function beforeValidate() {
+	public function beforeAllow() {
 		return true;
 	}
 
-	public function afterValidate() {
+	public function afterAllow() {
 		$this->overrideResult('hoge');
 	}
 

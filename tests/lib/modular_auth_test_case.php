@@ -19,8 +19,17 @@ abstract class ModularAuthTestCase extends CakeTestCase {
 	public function startTest($method) {
 
 		$this->Controller = $this->getMock('Controller');
+		$this->Controller->constructClasses();
+
+		$this->Controller->request = new CakeRequest('/');
+		$this->Controller->request->addParams(array(
+			'controller' => 'Test',
+			'action' => 'hoge',
+		));
+
 		$this->Collection = $this->Controller->Components;
 		$this->Collection->init($this->Controller);
+
 		$this->Auth = $this->getMock('ModularAuthComponent', array(), array($this->Collection, array()));
 		parent::startTest($method);
 
