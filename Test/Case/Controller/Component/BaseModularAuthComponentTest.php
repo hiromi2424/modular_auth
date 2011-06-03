@@ -1,9 +1,8 @@
 <?php
 
-App::import('Lib', 'ModularAuth.ModularAuthTestCase', false, array(App::pluginPath('ModularAuth') . 'tests' . DS . 'lib'));
-App::import('Component', 'ModularAuth.MockInterruptModularAuthenticator', false, array(App::pluginPath('ModularAuth') . 'tests' . DS . 'lib'));
+App::uses('ModularAuthTestCase', 'ModularAuth.TestSuite');
 
-class BaseModularAuthComponentTestCase extends ModularAuthTestCase {
+class BaseModularAuthComponentTest extends ModularAuthTestCase {
 
 	public function startTest($method = null) {
 

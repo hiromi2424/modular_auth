@@ -1,8 +1,7 @@
 <?php
 
-App::import('Lib', array(
-	'ModularAuth.ModularAuthUtility',
-), false);
+App::uses('ModularAuthUtility', 'ModularAuth.Lib');
+App::uses('Component', 'Controller');
 
 abstract class ModularAuthBaseObject extends Component {
 

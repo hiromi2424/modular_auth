@@ -74,8 +74,10 @@ class ModularAuthUtility {
 			$objectName .= Inflector::camelize($type);
 		}
 
-		if (!App::import($type, $name) && !class_exists($objectName)) {
-			throw new ModularAuth_ObjectNotFoundException($objectName);
+		if (!class_exists($objectName)) {
+			if (!App::import($type, $name) && !class_exists($objectName)) {
+				throw new ModularAuth_ObjectNotFoundException($objectName);
+			}
 		}
 
 		if (strtolower($type) === 'component') {

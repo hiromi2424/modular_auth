@@ -1,8 +1,8 @@
 <?php
 
-App::import('Lib', 'ModularAuth.ModularAuthTestCase', false, array(App::pluginPath('ModularAuth') . 'tests' . DS . 'lib'));
+App::uses('ModularAuthTestCase', 'ModularAuth.TestSuite');
 
-class ModularAuthBaseObjectTestCase extends ModularAuthTestCase {
+class ModularAuthBaseObjectTest extends ModularAuthTestCase {
 
 	public function startTest($method) {
 

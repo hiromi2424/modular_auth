@@ -1,6 +1,6 @@
 <?php
 
-class ModularAuthException extends Exception {
+class ModularAuthException extends CakeException {
 	public function __construct($message = null, $code = 0, Exception $previous = null) {
 		if (Configure::read('ModularAuth.debug_trace')) {
 			$trace = "\n" . Debugger::trace(array('start' => 1));

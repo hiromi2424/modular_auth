@@ -1,8 +1,6 @@
 <?php
 
-App::import('Lib', array(
-	'ModularAuth.ModularAuthenticator',
-), false);
+App::uses('ModularAuthenticator', 'ModularAuth.Lib');
 
 class MockInterruptModularAuthenticatorComponent extends ModularAuthenticator {
 

@@ -10,14 +10,14 @@ class AllModularAuthTest extends PHPUnit_Framework_TestSuite {
 
 		$suite = new PHPUnit_Framework_TestSuite('All ModularAuth plugin tests');
 
-		$basePath = App::pluginPath('ModularAuth') . 'tests' . DS . 'cases' . DS;
+		$basePath = App::pluginPath('ModularAuth') . 'Test' . DS . 'Case' . DS;
 		$it = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($basePath));
 
 		while ($it->valid()) {
 
 			if (!$it->isDot()) {
 				$file = $it->key();
-				if (preg_match('|\.test\.php$|', $file) && $file !== __FILE__) {
+				if (preg_match('|Test\.php$|', $file) && $file !== __FILE__) {
 					$suite->addTestFile($file);
 				}
 			}

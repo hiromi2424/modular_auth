@@ -1,9 +1,7 @@
 <?php
 
-App::import('Lib', array(
-	'ModularAuth.ModularAuthUtility',
-	'ModularAuth.ModularAuthenticator',
-), false);
+App::uses('ModularAuthUtility', 'ModularAuth.Lib');
+App::uses('ModularAuthenticator', 'ModularAuth.Lib');
 
 class ModularAuthenticatorsComponent extends ModularAuthBaseObject implements ArrayAccess {
 

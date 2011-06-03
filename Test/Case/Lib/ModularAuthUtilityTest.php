@@ -1,6 +1,6 @@
 <?php
 
-App::import('Lib', 'ModularAuth.ModularAuthTestCase', false, array(App::pluginPath('ModularAuth') . 'tests' . DS . 'lib'));
+App::uses('ModularAuthTestCase', 'ModularAuth.TestSuite');
 
 class ModularAuthUtilityTest extends ModularAuthTestCase {
 
