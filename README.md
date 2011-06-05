@@ -17,11 +17,11 @@ This was versioned as 0.1 Beta.
 
 in your plugins directory,
 
-	git clone git://github.com/hiromi2424/modular_auth.git
+	git clone git://github.com/hiromi2424/modular_auth.git ModularAuth
 
 or in current directory of your repository,
 
-	git submodule add git://github.com/hiromi2424/modular_auth.git plugins/modular_auth
+	git submodule add git://github.com/hiromi2424/modular_auth.git plugins/ModularAuth
 
 ## Usage
 
